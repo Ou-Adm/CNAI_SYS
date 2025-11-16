@@ -1,0 +1,83 @@
+{% extends 'membres/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="qr-section">
+    <div class="qr-container">
+        <div class="qr-wrapper">
+            <!-- LEFT SIDE - QR CODE -->
+            <div class="qr-left">
+                <div class="qr-title">
+                    <h1>📱 Mon QR Code</h1>
+                    <p>Présentez ce code lors des événements</p>
+                </div>
+
+                <div class="qr-display">
+                    <img src="{{ qr_code }}" alt="QR Code du membre">
+                </div>
+            </div>
+
+            <!-- RIGHT SIDE - INFO -->
+            <div class="qr-right">
+                <!-- Info Membre -->
+                <div class="info-card member-info">
+                    <h2>Vos informations</h2>
+                    
+                    <div class="member-detail">
+                        <div class="detail-item">
+                            <span class="detail-label">Nom complet</span>
+                            <span class="detail-value">{{ membre.prenom }} {{ membre.nom }}</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Filière</span>
+                            <span class="detail-value">{{ membre.filliere }}</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Email</span>
+                            <span class="detail-value">{{ membre.email }}</span>
+                        </div>
+
+                        <div class="detail-item">
+                            <span class="detail-label">Code MASSAR</span>
+                            <span class="detail-value">{{ membre.code_MASSAR }}</span>
+                        </div>
+                    </div>
+
+                    <div class="uuid-box">
+                        <p>{{ membre.uuid_code }}</p>
+                    </div>
+                </div>
+
+                <!-- Tips -->
+                <div class="tips-section">
+                    <h3>💡 Comment utiliser</h3>
+                    <ul>
+                        <li>Montrez ce QR code à chaque événement</li>
+                        <li>L'admin le scannera pour enregistrer votre présence</li>
+                        <li>Vous gagnerez des points à chaque présence</li>
+                        <li>Un certificat est généré après tous les jours d'un événement</li>
+                    </ul>
+                </div>
+
+                <!-- Actions -->
+                <div class="action-buttons">
+                    <button class="btn-primary" onclick="window.print()">🖨️ Imprimer le code</button>
+                    <a href="{% url 'profile' %}" class="btn-secondary">← Retour au profil</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Optionnel: Permettre le téléchargement du QR code
+    function downloadQRCode() {
+        const link = document.createElement('a');
+        link.href = document.querySelector('.qr-display img').src;
+        link.download = 'mon-qr-code.png';
+        link.click();
+    }
+</script>
+{% endblock %}

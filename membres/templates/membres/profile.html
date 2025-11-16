@@ -1,0 +1,32 @@
+{% extends 'membres/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="profile-hero">
+    <div class="profile-left">
+        <h1 class="profile-title">Profil de {{ membre.prenom }} {{ membre.nom }}</h1>
+
+        <div class="profile-info">
+            <p><strong>Email :</strong> {{ membre.email }}</p>
+            <p><strong>Code MASSAR :</strong> {{ membre.code_MASSAR }}</p>
+            <p><strong>Filière :</strong> {{ membre.filliere }}</p>
+            <p><strong>Téléphone :</strong> {{ membre.telephone }}</p>
+            <p><strong>Points :</strong> {{ membre.points }}</p>
+            <p><strong>Rang :</strong> {{ membre.rang }}</p>
+        </div>
+
+        <a href="{% url 'settings' %}" class="profile-edit-btn">Modifier le profil</a>
+        <a href="{% url 'my_qr' %}" class="btn btn-primary">
+         Voir mon QR Code
+</a>
+    </div>
+
+    <div class="profile-right">
+        {% if membre.photo %}
+            <img src="{{ membre.photo.url }}" class="profile-photo" alt="Photo de profil">
+        {% else %}
+            <div class="profile-placeholder">A</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

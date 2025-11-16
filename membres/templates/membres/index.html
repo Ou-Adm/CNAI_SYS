@@ -1,0 +1,28 @@
+{% extends 'membres/base.html' %}
+{% load static %}
+{{ request.session.membre_id }}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'membres/css/hero.css' %}">
+
+<div class="hero-container">
+    <div class="content-left">
+        <h1 class="quote">
+            AI is likely to be   <br>
+            the best or the worst thing   <br>
+            to happen to humanity
+        </h1>
+        
+        <div class="author-info">
+            <div class="author-name">Stephen Hawking</div>
+            <div class="author-title">British theoretical physicist</div>
+        </div>
+    </div>
+
+    <div class="image-right">
+        <img src="{% static 'membres/images/votre-photo.jpg' %}" 
+             alt="Portrait" 
+             class="profile-image">
+    </div>
+</div>
+{% endblock %}

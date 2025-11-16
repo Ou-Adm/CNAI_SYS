@@ -1,0 +1,428 @@
+{% extends 'membres/base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .scan-section {
+        background: #000000;
+        padding: 80px 20px;
+        min-height: 100vh;
+    }
+
+    .scan-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .scan-header {
+        text-align: center;
+        margin-bottom: 50px;
+    }
+
+    .scan-header h1 {
+        font-size: 48px;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 20px;
+    }
+
+    .scan-header p {
+        font-size: 16px;
+        color: #cbd5e0;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .scan-wrapper {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3rem;
+        align-items: start;
+    }
+
+    .scan-form {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .form-group label {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #e0e0e0;
+    }
+
+    .form-group select,
+    .form-group input {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 0.875rem 1rem;
+        border-radius: 0.6rem;
+        color: white;
+        font-size: 1rem;
+    }
+
+    .form-group select:focus,
+    .form-group input:focus {
+        outline: none;
+        border-color: rgba(102, 126, 234, 0.5);
+        background: rgba(102, 126, 234, 0.05);
+    }
+
+    .tab-buttons {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .tab-btn {
+        flex: 1;
+        padding: 0.875rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.05);
+        color: #cbd5e0;
+        border-radius: 0.6rem;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    .tab-btn.active {
+        background: rgba(102, 126, 234, 0.15);
+        border-color: rgba(102, 126, 234, 0.5);
+        color: white;
+    }
+
+    .camera-section {
+        display: none;
+    }
+
+    .camera-section.active {
+        display: block;
+    }
+
+    #video {
+        width: 100%;
+        border-radius: 0.8rem;
+        background: #000;
+        margin-bottom: 1.5rem;
+        border: 1px solid rgba(102, 126, 234, 0.2);
+    }
+
+    .camera-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .scan-btn, .camera-btn {
+        padding: 1rem;
+        background: rgba(102, 126, 234, 0.1);
+        border: 1px solid rgba(102, 126, 234, 0.3);
+        color: #aabaff;
+        border-radius: 0.6rem;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .scan-btn:hover, .camera-btn:hover {
+        background: rgba(102, 126, 234, 0.2);
+        color: white;
+    }
+
+    .stop-btn {
+        background: rgba(220, 53, 69, 0.1);
+        border-color: rgba(220, 53, 69, 0.3);
+        color: #ff8a9b;
+        display: none;
+    }
+
+    #manualTab {
+        display: none;
+    }
+
+    .info-box {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+        border: 1px solid rgba(102, 126, 234, 0.2);
+        padding: 1.5rem;
+        border-radius: 0.8rem;
+    }
+
+    .info-box h3 {
+        font-size: 14px;
+        color: #9bb5ff;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+
+    .info-box p {
+        color: #cbd5e0;
+        font-size: 14px;
+        margin: 0;
+    }
+
+    .result-success {
+        background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(40, 167, 69, 0.05));
+        border: 1px solid rgba(40, 167, 69, 0.3);
+        border-radius: 0.8rem;
+        padding: 2rem;
+        display: none;
+    }
+
+    .result-success.show {
+        display: block;
+    }
+
+    .result-success h2 {
+        color: #28a745;
+        margin: 0 0 1rem 0;
+        font-size: 28px;
+        font-weight: 700;
+    }
+
+    .error-message {
+        background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(255, 107, 107, 0.05));
+        border: 1px solid rgba(255, 107, 107, 0.3);
+        border-radius: 0.8rem;
+        padding: 1.5rem;
+        display: none;
+        color: #ff8a9b;
+    }
+
+    .error-message.show {
+        display: block;
+    }
+
+    #canvas {
+        display: none;
+    }
+
+    .status {
+        font-size: 12px;
+        color: #9bb5ff;
+        margin-top: 0.5rem;
+    }
+
+    @media (max-width: 968px) {
+        .scan-wrapper {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="scan-section">
+    <div class="scan-container">
+        <div class="scan-header">
+            <h1>📱 Scanner QR Code</h1>
+            <p>Scannez le QR code d'un membre</p>
+        </div>
+
+        <div class="scan-wrapper">
+            <div class="scan-form">
+                <div class="form-group">
+                    <label for="evenement">Sélectionnez un événement</label>
+                    <select id="evenement">
+                        <option value="">-- Choisir --</option>
+                        {% for evt in evenements %}
+                            <option value="{{ evt.id }}">{{ evt.titre }} ({{ evt.nombre_jours }}j)</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="tab-buttons">
+                    <button class="tab-btn active" data-tab="camera">📷 Caméra</button>
+                    <button class="tab-btn" data-tab="manual">✏️ Manuel</button>
+                </div>
+
+                <div class="camera-section active" id="cameraTab">
+                    <video id="video" playsinline autoplay muted></video>
+                    <div class="status" id="status"></div>
+                    <div class="camera-controls">
+                        <button class="camera-btn" id="startCamera">🎥 Démarrer caméra</button>
+                        <button class="stop-btn" id="stopCamera">⏹️ Arrêter</button>
+                    </div>
+                    <canvas id="canvas"></canvas>
+                </div>
+
+                <div id="manualTab">
+                    <div class="form-group">
+                        <label for="uuid_input">UUID du QR code</label>
+                        <input type="text" id="uuid_input" placeholder="Collez l'UUID..."/>
+                    </div>
+                    <button class="scan-btn" id="submitBtn">✅ Confirmer</button>
+                </div>
+            </div>
+
+            <div>
+                <div class="info-box">
+                    <h3>📌 Mode Manuel</h3>
+                    <p>Si la caméra ne fonctionne pas, utilisez l'onglet "Manuel" et collez l'UUID directement.</p>
+                </div>
+
+                <div id="result" class="result-success">
+                    <div id="resultContent"></div>
+                </div>
+
+                <div id="error" class="error-message">
+                    <span id="errorMessage"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.4/jsQR.js"></script>
+
+<script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const startBtn = document.getElementById('startCamera');
+    const stopBtn = document.getElementById('stopCamera');
+    const status = document.getElementById('status');
+    let stream = null;
+    let isScanning = false;
+
+    // Tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const tab = this.getAttribute('data-tab');
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            document.getElementById('cameraTab').style.display = tab === 'camera' ? 'block' : 'none';
+            document.getElementById('manualTab').style.display = tab === 'manual' ? 'block' : 'none';
+        });
+    });
+
+    startBtn.addEventListener('click', async () => {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+            });
+            video.srcObject = stream;
+            startBtn.style.display = 'none';
+            stopBtn.style.display = 'block';
+            status.textContent = '⏳ Scanning...';
+            isScanning = true;
+            scanQRCode();
+        } catch (err) {
+            showError('❌ Erreur caméra: ' + err.message);
+        }
+    });
+
+    stopBtn.addEventListener('click', () => {
+        if (stream) stream.getTracks().forEach(t => t.stop());
+        isScanning = false;
+        startBtn.style.display = 'block';
+        stopBtn.style.display = 'none';
+        status.textContent = '';
+    });
+
+    function scanQRCode() {
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+        const scan = () => {
+            if (video.readyState === video.HAVE_ENOUGH_DATA && isScanning) {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0);
+
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+                if (code && code.data) {
+                    status.textContent = '✅ QR Code détecté!';
+                    const uuid = code.data;
+                    const evenement_id = document.getElementById('evenement').value;
+
+                    if (!evenement_id) {
+                        showError('Sélectionnez un événement');
+                    } else {
+                        isScanning = false;
+                        performScan(uuid, evenement_id);
+                        if (stream) stream.getTracks().forEach(t => t.stop());
+                        startBtn.style.display = 'block';
+                        stopBtn.style.display = 'none';
+                        status.textContent = '';
+                    }
+                    return;
+                }
+            }
+
+            if (isScanning) {
+                requestAnimationFrame(scan);
+            }
+        };
+
+        scan();
+    }
+
+    document.getElementById('submitBtn').addEventListener('click', () => {
+        const uuid = document.getElementById('uuid_input').value.trim();
+        const evenement_id = document.getElementById('evenement').value;
+
+        if (!uuid) {
+            showError('Entrez un UUID');
+            return;
+        }
+        if (!evenement_id) {
+            showError('Sélectionnez un événement');
+            return;
+        }
+
+        performScan(uuid, evenement_id);
+    });
+
+    function performScan(uuid, evenement_id) {
+        fetch('/api/scan-qr/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ uuid_code: uuid, evenement_id: parseInt(evenement_id) })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('result').classList.add('show');
+                document.getElementById('error').classList.remove('show');
+                document.getElementById('resultContent').innerHTML = `
+                    <h2>✅ ${data.data.nom}</h2>
+                    <div style="color: #cbd5e0; margin-top: 1rem;">
+                        <div>+${data.data.points_gaines} pts | Total: ${data.data.points_total} pts</div>
+                        <div>Jours: ${data.data.jours_assistes}/${data.data.jours_requis}</div>
+                        ${data.data.nouveau_certificat ? `<div style="color: #ffd700; margin-top: 1rem;">🎓 ${data.data.message_certificat}</div>` : ''}
+                    </div>
+                `;
+                document.getElementById('uuid_input').value = '';
+                setTimeout(() => document.getElementById('result').classList.remove('show'), 4000);
+            } else {
+                showError(data.message);
+            }
+        })
+        .catch(e => showError('❌ Erreur: ' + e));
+    }
+
+    function showError(msg) {
+        document.getElementById('error').classList.add('show');
+        document.getElementById('result').classList.remove('show');
+        document.getElementById('errorMessage').textContent = msg;
+        setTimeout(() => document.getElementById('error').classList.remove('show'), 5000);
+    }
+
+    function getCookie(name) {
+        for (let c of document.cookie.split(';')) {
+            if (c.trim().startsWith(name + '=')) {
+                return decodeURIComponent(c.trim().substring(name.length + 1));
+            }
+        }
+        return '';
+    }
+</script>
+{% endblock %}
