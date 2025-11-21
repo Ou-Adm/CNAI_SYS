@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-c4-kpal9c-ss^vecccdf5d!_2y$f2$eqrciv^)!1ch7shy4ep)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*",".loca.lt"]
 
 
 

@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="{% static 'membres/css/navbar.css' %}?v=3">
 </head>
 
-<body>
+<body class="{% if is_member %}logged{% endif %}">
 
     <!-- Navbar -->
     <nav class="navbar-custom">
