@@ -13,12 +13,18 @@
     border: none;
     padding: 0.5rem 0.75rem;
     cursor: pointer;
-    display: flex;
+    /* PAR DÉFAUT (Desktop Visiteur) : On le cache pour ne pas avoir le menu en double */
+    display: none; 
     flex-direction: column;
     gap: 4px;
     align-items: flex-end;
     justify-content: center;
     transition: all 0.3s ease;
+}
+
+/* Si l'utilisateur est connecté, on affiche le hamburger sur PC aussi (pour accéder au profil) */
+body.user-logged-in .hamburger-btn {
+    display: flex;
 }
 
 .hamburger-btn:hover {
@@ -100,6 +106,20 @@
     transform: translateX(2px);
 }
 
+/* Petit séparateur visuel */
+.sidebar-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 10px 20px;
+}
+
+/* Optionnel : Cacher les liens "Accueil/Team" dans la sidebar sur PC si on veut */
+@media (min-width: 769px) {
+    .nav-item-mobile {
+        display: none;
+    }
+}
+
 /* ===== OVERLAY ===== */
 .overlay {
     position: fixed;
@@ -146,10 +166,7 @@
 
 /* ===== LOGOUT BUTTON ===== */
 .logout-btn {
-    position: absolute;
-    bottom: 30px;
-    left: 24px;
-    right: 24px;
+    margin: 20px 24px; /* Marge adaptée au scroll */
     padding: 12px 20px;
     background: rgba(102, 126, 234, 0.1);
     color: rgba(102, 126, 234, 0.9);
@@ -213,12 +230,6 @@
     transition: all 0.3s ease;
 }
 
-.logo-image {
-    height: 50px;
-    width: auto;
-    transition: transform 0.3s ease;
-}
-
 .brand-logo:hover {
     color: #b0b0b0;
     transform: scale(1.05);
@@ -274,7 +285,7 @@
     box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
 }
 
-/* ===== RESPONSIVE ===== */
+/* ===== RESPONSIVE (C'est là que tout se joue) ===== */
 @media (max-width: 768px) {
     .navbar-custom {
         padding: 0;
@@ -288,22 +299,21 @@
     
     .brand-logo {
         font-size: 1.2rem;
-        gap: 0.4rem;
-    }
-
-    .logo-image {
-        height: 35px;
     }
     
+    /* 1. On cache les liens du haut (car ils sont maintenant dans la sidebar) */
     .nav-links {
         display: none;
     }
     
+    /* 2. On cache le bouton Sign In du haut (car il est maintenant dans la sidebar) */
     .signin-btn {
         display: none;
     }
 
+    /* 3. IMPORTANT : On force l'affichage du hamburger sur mobile, peu importe si on est connecté ou pas ! */
     .hamburger-btn {
+        display: flex !important; 
         padding: 0.3rem 0.5rem;
     }
 
@@ -313,23 +323,42 @@
         gap: 3px;
     }
 }
+/* static/membres/css/navbar.css */
 
-@media (max-width: 480px) {
-    .sidebar {
-        width: 100%;
-        right: -100%;
-    }
+.brand-logo {
+    display: flex;
+    align-items: center;
+    padding: 0;
+    margin: 0;
+    height: 100%;
+}
 
-    .sidebar.active {
-        right: 0;
-    }
+.logo-image {
+    /* 1. TAILLE : On met 55px (presque toute la hauteur de la barre) */
+    height: 65px; 
+    width: auto;
+    object-fit: contain;
+    
+    
+/* Effet au survol : Devient 100% blanc éclatant sans bouger */
+.brand-logo:hover .logo-image {
+    opacity: 1;
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+}
 
-    .sidebar-nav a {
-        padding: 12px 15px;
-        font-size: 15px;
+/* Version Mobile */
+@media (max-width: 768px) {
+    .logo-image {
+        /* Sur mobile, on réduit un peu pour que ça rentre */
+        height: 32px; 
     }
+} 
+/* À ajouter dans navbar.css */
 
-    .sidebar-icon {
-        font-size: 18px;
-    }
+.brand-logo {
+    display: flex;
+    align-items: center;
+    padding: 0;
+    /* On enlève tout margin inutile qui prendrait de la place */
+    margin: 0; 
 } 

@@ -1,12 +1,12 @@
 {% extends 'membres/base.html' %}
 {% load static %}
-{{ request.session.membre_id }}
 
 {% block content %}
 <link rel="stylesheet" href="{% static 'membres/css/hero.css' %}">
 
-<div class="hero-container">
-    <div class="content-left">
+<div class="hero-container" style="margin-bottom: 0; position: relative; z-index: 10; padding-bottom: 100px; overflow: hidden;">
+    
+    <div class="content-left" style="position: relative; z-index: 20;">
         <h1 class="quote">
             AI is likely to be   <br>
             the best or the worst thing   <br>
@@ -19,10 +19,102 @@
         </div>
     </div>
 
-    <div class="image-right">
+    <div class="image-right" style="position: relative; z-index: 20;">
         <img src="{% static 'membres/images/votre-photo.jpg' %}" 
              alt="Portrait" 
              class="profile-image">
     </div>
+
+    <div style="
+        position: absolute; 
+        bottom: 0; 
+        left: 0; 
+        width: 100%; 
+        height: 250px; 
+        background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, #000000 100%); 
+        z-index: 15;
+        pointer-events: none;">
+    </div>
+
 </div>
+
+<section class="pb-24 pt-10 bg-black relative z-10">
+    
+    <div style="max-width: 1400px; margin: 0 auto; padding: 0 3rem; width: 100%;">
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-12 md:gap-8 text-center">
+            
+            <div class="feature-item animate-up delay-1 group cursor-default">
+                <div class="flex justify-center mb-6">
+                    <svg class="w-14 h-14 text-blue-500 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-3">
+                    Projets <br> Réussis
+                </h3>
+                <p class="text-sm text-gray-400 leading-relaxed px-2">
+                    Des centaines de projets étudiants en IA. Participation aux hackathons nationaux.
+                </p>
+            </div>
+
+            <div class="feature-item animate-up delay-2 group cursor-default">
+                <div class="flex justify-center mb-6">
+                    <svg class="w-14 h-14 text-blue-500 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-3">
+                    Encadrement <br> Expert
+                </h3>
+                <p class="text-sm text-gray-400 leading-relaxed px-2">
+                    Un programme conçu par des étudiants seniors et des experts en Data Science.
+                </p>
+            </div>
+
+            <div class="feature-item animate-up delay-3 group cursor-default">
+                <div class="flex justify-center mb-6">
+                    <svg class="w-14 h-14 text-blue-500 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-3">
+                    Workshops <br> Interactifs
+                </h3>
+                <p class="text-sm text-gray-400 leading-relaxed px-2">
+                    Sessions de code en live, entraide et debugging en temps réel.
+                </p>
+            </div>
+
+            <div class="feature-item animate-up delay-4 group cursor-default">
+                <div class="flex justify-center mb-6">
+                    <svg class="w-14 h-14 text-blue-500 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-3">
+                    Parcours <br> Complet
+                </h3>
+                <p class="text-sm text-gray-400 leading-relaxed px-2">
+                    Du débutant à l'expert. Des bases de Python aux réseaux de neurones.
+                </p>
+            </div>
+
+            <div class="feature-item animate-up delay-5 group cursor-default">
+                <div class="flex justify-center mb-6">
+                    <svg class="w-14 h-14 text-blue-500 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-3">
+                    Ressources <br> & Datasets
+                </h3>
+                <p class="text-sm text-gray-400 leading-relaxed px-2">
+                    Accès à notre bibliothèque de code, datasets et tutoriels exclusifs.
+                </p>
+            </div>
+
+        </div>
+    </div>
+</section>
 {% endblock %}
