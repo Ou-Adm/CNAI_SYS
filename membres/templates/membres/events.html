@@ -1,0 +1,285 @@
+{% extends 'membres/base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'membres/css/hero.css' %}">
+
+
+
+<section style="background: #000; padding: 100px 20px; border-top: 1px solid rgba(255,255,255,0.05);">
+    
+    <div class="terminal-container animate-fade-up">
+        
+        <div class="clean-terminal">
+            <div class="terminal-header">
+                <div class="window-controls">
+                    <div class="control close"></div>
+                    <div class="control minimize"></div>
+                    <div class="control maximize"></div>
+                </div>
+                <span class="terminal-title">guest@cnai-estm:~</span>
+            </div>
+
+            <div class="terminal-body">
+                <div class="cmd-line">
+                    <span class="prompt-arrow">➜</span> <span class="prompt-path">~</span> <span class="cmd-txt">sudo</span> ./init_member.sh
+                </div>
+                
+                <div class="terminal-output">
+                    > Verifying student status... <span class="status-ok">[OK]</span><br>
+                    > Loading innovation modules... <span class="status-ok">[LOADED]</span><br>
+                    > Generating access key... <span class="status-ok">#CNAI-2025-ACCESS</span>
+                </div>
+
+                <div class="terminal-message">
+                    Access granted. Welcome to the future.
+                </div>
+
+                <div style="margin-top: 25px;">
+                    <span class="prompt-arrow">➜</span> <span class="prompt-path">~</span> <span class="typing-cursor">|</span> <br><br>
+                    <a href="#" onclick="openModal(event)" class="clean-btn">
+                        [ EXECUTE: JOIN_ADVENTURE ]
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+
+
+<div id="joinModal" class="modal-overlay">
+    <div class="modal-window clean-terminal">
+        
+        <div class="terminal-header">
+            <div class="window-controls">
+                <div class="control close" onclick="closeModal()"></div>
+            </div>
+            <span class="terminal-title">send_application.exe</span>
+        </div>
+
+        <div class="terminal-body" style="text-align: left;">
+            <div class="terminal-message" style="margin-top: 0; margin-bottom: 20px; font-size: 1rem;">
+                > Initializing secure connection...<br>
+                > Please enter your credentials:
+            </div>
+
+            <form method="POST" action="{% url 'send_application' %}">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label class="cmd-txt">INPUT_NAME:</label>
+                    <input type="text" name="name" class="terminal-input" placeholder="Votre Nom complet" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="cmd-txt">INPUT_EMAIL:</label>
+                    <input type="email" name="email" class="terminal-input" placeholder="votre@email.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="cmd-txt">INPUT_PHONE:</label>
+                    <input type="tel" name="telephone" class="terminal-input" placeholder="+212 6..." required>
+                </div>
+
+                <div class="form-group">
+                    <label class="cmd-txt">INPUT_MESSAGE:</label>
+                    <textarea name="message" class="terminal-input" rows="3" placeholder="Pourquoi voulez-vous rejoindre le CNAI ?" required></textarea>
+                </div>
+
+                <button type="submit" class="clean-btn" style="width: 100%; margin-top: 10px;">
+                    [ TRANSMIT_DATA ]
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* --- Styles du Terminal Principal --- */
+    .terminal-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    .clean-terminal {
+        background: #0f0f12; /* Fond noir mat */
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+        overflow: hidden;
+        font-family: 'Courier New', monospace;
+        transition: transform 0.3s ease;
+    }
+
+    .clean-terminal:hover {
+        transform: translateY(-5px);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .terminal-header {
+        background: #1a1a20;
+        padding: 12px 15px;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        position: relative;
+    }
+
+    .window-controls { display: flex; gap: 8px; }
+    .control { width: 12px; height: 12px; border-radius: 50%; opacity: 0.8; }
+    .close { background: #ff5f56; cursor: pointer; } 
+    .minimize { background: #ffbd2e; } 
+    .maximize { background: #27c93f; }
+
+    .terminal-title {
+        position: absolute; left: 50%; transform: translateX(-50%);
+        color: #555; font-size: 0.8rem; font-weight: 600; letter-spacing: 1px;
+    }
+
+    .terminal-body {
+        padding: 30px;
+        color: #cbd5e0;
+        line-height: 1.6;
+    }
+
+    /* Couleurs Syntaxe */
+    .prompt-arrow { color: #a855f7; font-weight: bold; }
+    .prompt-path { color: #60a5fa; font-weight: bold; }
+    .cmd-txt { color: #f1fa8c; font-weight: bold; }
+    .status-ok { color: #27c93f; }
+
+    .terminal-message {
+        margin-top: 25px;
+        color: white;
+        font-size: 1.2rem;
+        font-weight: 700;
+    }
+
+    .typing-cursor {
+        color: #a855f7;
+        animation: blink 1s step-end infinite;
+    }
+
+    /* Bouton Clean */
+    .clean-btn {
+        background: transparent;
+        color: #a855f7;
+        text-decoration: none;
+        padding: 12px 25px;
+        border: 1px solid #a855f7;
+        border-radius: 4px;
+        font-weight: 700;
+        display: inline-block;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+        letter-spacing: 1px;
+        cursor: pointer;
+    }
+
+    .clean-btn:hover {
+        background: rgba(168, 85, 247, 0.1);
+        color: white;
+        border-color: #d8b4fe;
+    }
+
+    /* --- Styles de la Modale (Pop-up) --- */
+    .modal-overlay {
+        display: none; /* Caché par défaut */
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(8px);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        padding: 20px; /* Marge de sécurité sur mobile */
+    }
+
+    .modal-overlay.active {
+        display: flex;
+        opacity: 1;
+    }
+
+    .modal-window {
+        width: 100%;
+        max-width: 500px;
+        
+        /* GESTION DU SCROLL SI L'ÉCRAN EST TROP PETIT */
+        max-height: 90vh; 
+        overflow-y: auto;
+        display: flex; flex-direction: column;
+        
+        transform: scale(0.95);
+        transition: transform 0.3s ease;
+        margin: 0 auto;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.9);
+    }
+
+    .modal-overlay.active .modal-window {
+        transform: scale(1);
+    }
+
+    /* Scrollbar custom pour le modal */
+    .modal-window::-webkit-scrollbar { width: 6px; }
+    .modal-window::-webkit-scrollbar-track { background: #0f0f12; }
+    .modal-window::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+    /* Formulaire */
+    .form-group { margin-bottom: 12px; }
+    
+    .terminal-input {
+        width: 100%;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: #fff;
+        padding: 10px;
+        font-family: 'Courier New', monospace;
+        margin-top: 5px;
+        border-radius: 4px;
+        outline: none;
+        font-size: 0.95rem;
+    }
+
+    .terminal-input:focus {
+        border-color: #a855f7;
+        background: rgba(168, 85, 247, 0.05);
+    }
+
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* Responsive Mobile */
+    @media (max-width: 600px) {
+        .terminal-body { padding: 20px; }
+        .terminal-title { display: none; }
+        .terminal-message { font-size: 1rem; }
+    }
+</style>
+
+<script>
+    function openModal(e) {
+        if(e) e.preventDefault();
+        const modal = document.getElementById('joinModal');
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Empêche le scroll de la page arrière
+    }
+
+    function closeModal() {
+        const modal = document.getElementById('joinModal');
+        modal.classList.remove('active');
+        document.body.style.overflow = ''; // Réactive le scroll
+    }
+
+    // Fermer si on clique en dehors de la fenêtre (sur le fond sombre)
+    document.getElementById('joinModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeModal();
+        }
+    });
+</script>
+
+{% endblock %}

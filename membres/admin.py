@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import *
+from django.utils.html import format_html
 
 # ============================================
 # ADMIN MEMBRES
@@ -53,10 +54,17 @@ class TeamMemberAdmin(admin.ModelAdmin):
 # ============================================
 @admin.register(Evenement)
 class EvenementAdmin(admin.ModelAdmin):
-    list_display = ('titre', 'date_debut', 'nombre_jours', 'lieu', 'points_par_jour', 'actif')
+    list_display = ('titre', 'date_debut', 'nombre_jours', 'lieu', 'points_par_jour', 'nombre_participants', 'actif')
     list_filter = ('actif', 'date_debut')
     list_editable = ('actif',)
     search_fields = ('titre', 'lieu')
+    
+    # On garde le champ 'participants' dans readonly pour qu'il ne soit pas modifiable
+    readonly_fields = ('liste_des_presents',) 
+
+    # On retire 'participants' d'ici pour ne plus voir les boîtes de sélection
+    # filter_horizontal = ('participants',)  <-- On supprime ou commente cette ligne
+
     fieldsets = (
         ('Informations de base', {
             'fields': ('titre', 'description', 'lieu')
@@ -64,10 +72,51 @@ class EvenementAdmin(admin.ModelAdmin):
         ('Durée et points', {
             'fields': ('date_debut', 'nombre_jours', 'points_par_jour')
         }),
+        ('Participants (Lecture Seule)', {
+            # On affiche notre fonction personnalisée au lieu du champ standard
+            'fields': ('liste_des_presents',) 
+        }),
         ('Statut', {
             'fields': ('actif',)
         }),
     )
+
+    fieldsets = (
+        ('Informations Générales', {
+            'fields': ('titre', 'description', 'lieu', 'actif')
+        }),
+        ('Dates & Points', {
+            'fields': ('date_debut', 'nombre_jours', 'points_par_jour')
+        }),
+        ('Personnalisation du Certificat', {
+            'description': "Configurez l'apparence du PDF pour cet événement.",
+            'fields': ('image_certificat', 'cert_nom_x', 'cert_nom_y', 'cert_text_color')
+        }),
+        ('Participants', {
+            'fields': ('participants',) # Si tu utilises ManyToMany
+        }),
+    )
+
+    def nombre_participants(self, obj):
+        return obj.participants.count()
+    nombre_participants.short_description = "Nb Participants"
+
+    # --- NOUVELLE FONCTION POUR LISTER LES NOMS ---
+    def liste_des_presents(self, obj):
+        presents = obj.participants.all()
+        
+        if not presents:
+            return "Aucun participant pour le moment."
+            
+        # On crée une liste HTML simple
+        html_content = "<ul style='margin-left: 0; padding-left: 15px;'>"
+        for p in presents:
+            html_content += f"<li style='margin-bottom: 5px;'>👤 <strong>{p.prenom} {p.nom}</strong> ({p.filliere})</li>"
+        html_content += "</ul>"
+        
+        return format_html(html_content)
+    
+    liste_des_presents.short_description = "Liste des Membres Scannés"
 
 
 # ============================================
@@ -84,12 +133,25 @@ class PresenceAdmin(admin.ModelAdmin):
 # ============================================
 # ADMIN CERTIFICAT
 # ============================================
+# admin.py
+
 @admin.register(Certificate)
 class CertificateAdmin(admin.ModelAdmin):
-    list_display = ('titre', 'membre', 'evenement', 'jours_assistes', 'date_obtention')
+    list_display = ('titre', 'membre', 'evenement', 'date_obtention')
     list_filter = ('evenement', 'date_obtention')
     search_fields = ('membre__nom', 'membre__prenom', 'titre')
     readonly_fields = ('date_obtention',)
+    
+    fieldsets = (
+        ('Informations', {
+            'fields': ('titre', 'membre', 'evenement', 'jours_assistes', 'date_obtention')
+        }),
+        ('Personnalisation du PDF', {
+            'description': "Design du texte (Position, Couleur et Police).",
+            # ✅ On ajoute 'police_ttf' ici
+            'fields': ('cert_nom_x', 'cert_nom_y', 'cert_text_color', 'police_ttf')
+        }),
+    )
 
 
 # ============================================

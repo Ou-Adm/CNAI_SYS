@@ -34,12 +34,40 @@ class Membres(models.Model):
 class Evenement(models.Model):
     titre = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
-    date_debut = models.DateField()  # Jour 1
-    nombre_jours = models.IntegerField(default=1)  # Durée en jours
+    date_debut = models.DateField()
+    nombre_jours = models.IntegerField(default=1)
     lieu = models.CharField(max_length=200)
-    points_par_jour = models.IntegerField(default=10)  # Points par jour
+    points_par_jour = models.IntegerField(default=10)
     created_at = models.DateTimeField(auto_now_add=True)
     actif = models.BooleanField(default=True)
+    image_certificat = models.ImageField(
+        upload_to='certificats_templates/',
+        blank=True, null=True, 
+        verbose_name="Image de fond (Template)"
+    )
+    
+    # Coordonnées pour le NOM DU MEMBRE
+    cert_nom_x = models.IntegerField(
+        default=420, 
+        verbose_name="Position X du Nom (Gauche <-> Droite)",
+        help_text="Centre de la page A4 = 420 environ"
+    )
+    cert_nom_y = models.IntegerField(
+        default=300, 
+        verbose_name="Position Y du Nom (Bas <-> Haut)",
+        help_text="0 = Tout en bas. 595 = Tout en haut."
+    )
+    
+    # Couleur du texte
+    cert_text_color = models.CharField(
+        max_length=7, 
+        default="#000000", 
+        verbose_name="Couleur du texte (Hex)",
+        help_text="Ex: #000000 pour noir, #FFFFFF pour blanc, #FFD700 pour or"
+    )
+
+    # ✅ LISTE DES PARTICIPANTS (Relation Many-to-Many avec Membres)
+    participants = models.ManyToManyField('Membres', related_name='evenements', blank=True)
     
     def __str__(self):
         return f"{self.titre} ({self.nombre_jours} jours)"
@@ -95,6 +123,20 @@ class Certificate(models.Model):
     jours_assistes = models.IntegerField()
     date_obtention = models.DateTimeField(auto_now_add=True)
     
+    # ✅ NOUVEAUX CHAMPS : Pour régler la position SUR CE CERTIFICAT PRÉCIS
+    cert_nom_x = models.IntegerField(default=420, verbose_name="Position X (Gauche/Droite)")
+    cert_nom_y = models.IntegerField(default=300, verbose_name="Position Y (Bas/Haut)")
+    cert_text_color = models.CharField(max_length=7, default="#000000", verbose_name="Couleur Texte (Hex)")
+    police_ttf = models.FileField(
+        upload_to='fonts/', 
+        blank=True, 
+        null=True, 
+        verbose_name="Fichier Police (.ttf)",
+        help_text="Laissez vide pour utiliser Helvetica par défaut."
+    )
+    
+    # ❌ ON A SUPPRIMÉ LE CHAMP 'fichier' CAR ON GÉNÈRE LE PDF AUTOMATIQUEMENT
+
     def __str__(self):
         return f"{self.titre} - {self.membre.prenom}"
     
@@ -139,3 +181,6 @@ class Annonce(models.Model):
     
     class Meta:
         ordering = ['-date_creation']
+
+
+        

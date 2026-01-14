@@ -1,0 +1,63 @@
+{% extends 'membres/base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="black-header">
+    <div class="animate-fade-up">
+        <div class="badge-container">
+            <span class="season-badge">Agenda 2025</span>
+        </div>
+        
+        <h1 class="hero-title">
+            Timeline des <br>
+            <span class="gradient-text">Missions</span>
+        </h1>
+        
+        <div class="month-navigator animate-fade-up" style="animation-delay: 0.1s;">
+            <a href="?year={{ prev_year }}&month={{ prev_month }}#timeline" class="nav-arrow">&lt;</a>
+            <h2 class="current-month">{{ current_month_name }} {{ current_year }}</h2>
+            <a href="?year={{ next_year }}&month={{ next_month }}#timeline" class="nav-arrow">&gt;</a>
+        </div>
+    </div>
+</div>
+
+<section class="timeline-section" id="timeline">
+    <div class="timeline-container">
+
+        <div class="timeline-line"></div>
+
+        {% for day_info in days %}
+            {% if day_info.events %}
+            
+                <div class="timeline-item animate-fade-up">
+                    
+                    <div class="timeline-date {% if day_info.is_today %}is-today-date{% endif %}">
+                        <span class="date-day">{{ day_info.day_number }}</span>
+                        <span class="date-month">{{ current_month_name|slice:":3" }}.</span>
+                    </div>
+
+                    <div class="timeline-dot {% if day_info.is_today %}is-today-dot{% endif %}"></div>
+
+                    <div class="timeline-content">
+                        {% for event in day_info.events %}
+                            <div class="event-card-cyber {{ event.css_class }}">
+                                <div class="card-glow"></div>
+                                <h3 class="event-title">{{ event.title }}</h3>
+                                <p class="event-status">CONFIRMED_PROTOCOL</p> 
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                </div>
+
+            {% endif %}
+        {% endfor %}
+
+        {% if not has_events_in_month %}
+             {% endif %}
+
+    </div>
+</section>
+
+{% endblock %}

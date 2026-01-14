@@ -1,0 +1,301 @@
+{% extends 'membres/base.html' %}
+{% load static %}
+
+{% block content %}
+
+<style>
+    /* =========================================
+       1. FOND ET LAYOUT (Cyber Style)
+       ========================================= */
+    .cert-section {
+        min-height: 100vh;
+        background: #050505;
+        padding: 120px 20px 60px 20px;
+        position: relative;
+        font-family: 'Inter', sans-serif;
+        overflow: hidden;
+    }
+
+    /* Lueur d'ambiance violette */
+    .cert-glow {
+        position: absolute;
+        width: 600px; height: 600px;
+        background: radial-gradient(circle, rgba(168, 85, 247, 0.1) 0%, transparent 70%);
+        top: 20%; left: 50%;
+        transform: translateX(-50%);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .cert-container {
+        max-width: 1100px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 2;
+    }
+
+    /* =========================================
+       2. EN-TÊTE
+       ========================================= */
+    .cert-header {
+        text-align: center;
+        margin-bottom: 60px;
+    }
+
+    .cert-header h2 {
+        font-size: 3rem;
+        font-weight: 800;
+        color: white;
+        margin-bottom: 10px;
+        letter-spacing: -1px;
+        background: -webkit-linear-gradient(45deg, #fff, #a855f7);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .cert-header p {
+        color: #9ca3af;
+        font-size: 1.1rem;
+    }
+
+    /* =========================================
+       3. GRILLE DES CARTES
+       ========================================= */
+    .cert-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 30px;
+    }
+
+    .cert-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        padding: 30px;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        backdrop-filter: blur(10px);
+        min-height: 280px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .cert-card:hover {
+        transform: translateY(-8px);
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(168, 85, 247, 0.4);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+    }
+
+    /* Contenu Haut de carte */
+    .card-top {
+        margin-bottom: 20px;
+    }
+
+    .cert-icon-wrapper {
+        width: 50px; height: 50px;
+        background: rgba(168, 85, 247, 0.15);
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: 20px;
+        color: #a855f7;
+        border: 1px solid rgba(168, 85, 247, 0.2);
+    }
+
+    .cert-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 8px;
+        line-height: 1.4;
+    }
+
+    .cert-event {
+        font-size: 0.95rem;
+        color: #a0a0a0;
+        display: flex; align-items: center; gap: 8px;
+    }
+
+    /* Contenu Bas de carte */
+    .card-bottom {
+        margin-top: auto;
+    }
+
+    .cert-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        margin-bottom: 20px;
+        font-size: 0.85rem;
+    }
+
+    .meta-date { color: #666; }
+    .meta-status { 
+        color: #10b981; /* Vert succès */
+        font-weight: 600;
+        display: flex; align-items: center; gap: 5px;
+        background: rgba(16, 185, 129, 0.1);
+        padding: 4px 10px;
+        border-radius: 50px;
+    }
+
+    /* --- BOUTON TÉLÉCHARGER --- */
+    .btn-download {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: 100%;
+        padding: 12px;
+        background: white;
+        color: black;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+        border: 1px solid white;
+    }
+
+    .btn-download:hover {
+        background: #a855f7; /* Violet au survol */
+        border-color: #a855f7;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    /* --- BADGE "EN ATTENTE" (Nouveau) --- */
+    .status-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: 100%;
+        padding: 12px;
+        background: rgba(234, 179, 8, 0.1); /* Jaune doré très léger */
+        border: 1px solid rgba(234, 179, 8, 0.3);
+        border-radius: 10px;
+        color: #eab308; /* Jaune doré */
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: default;
+    }
+
+    /* Animation du point jaune */
+    .pulse-dot {
+        width: 8px;
+        height: 8px;
+        background-color: #eab308;
+        border-radius: 50%;
+        box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7);
+        animation: pulse-yellow 2s infinite;
+    }
+
+    @keyframes pulse-yellow {
+        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7); }
+        70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(234, 179, 8, 0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(234, 179, 8, 0); }
+    }
+
+    /* État Vide */
+    .empty-state {
+        grid-column: 1 / -1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 80px 20px;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px dashed rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        text-align: center;
+    }
+    
+    .empty-icon { font-size: 3.5rem; margin-bottom: 20px; opacity: 0.5; filter: grayscale(1); }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .cert-header h2 { font-size: 2.2rem; }
+        .cert-grid { grid-template-columns: 1fr; }
+    }
+</style>
+
+<div class="cert-section">
+    <div class="cert-glow"></div>
+
+    <div class="cert-container animate-fade-up">
+        
+        <div class="cert-header">
+            <h2>Mes Certificats</h2>
+            <p>Documents officiels attestant de votre réussite aux événements.</p>
+        </div>
+
+        <div class="cert-grid">
+            {% for cert in certificates %}
+            <div class="cert-card">
+                
+                <div class="card-top">
+                    <div class="cert-icon-wrapper">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                    </div>
+
+                    <h3 class="cert-title">{{ cert.titre }}</h3>
+                    
+                    <div class="cert-event">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        <span>{{ cert.evenement.titre }}</span>
+                    </div>
+                </div>
+
+                <div class="card-bottom">
+                    <div class="cert-meta">
+                        <span class="meta-date">Le {{ cert.date_obtention|date:"d/m/Y" }}</span>
+                        <span class="meta-status">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            Validé
+                        </span>
+                    </div>
+
+                    {% if cert.evenement.image_certificat %}
+                        
+                        <a href="{% url 'download_certificate' cert.id %}" class="btn-download">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Télécharger le PDF
+                        </a>
+
+                    {% else %}
+                        
+                        <div class="status-badge" title="L'administration n'a pas encore validé le design du certificat">
+                            <div class="pulse-dot"></div>
+                            <span>Signature en cours...</span>
+                        </div>
+                        <div style="text-align: center; font-size: 0.75rem; color: #666; margin-top: 10px;">
+                            Disponible très prochainement
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+            {% empty %}
+            
+            <div class="empty-state">
+                <div class="empty-icon">🎓</div>
+                <h3 style="color:white; margin-bottom:10px; font-size:1.5rem;">Aucun certificat disponible</h3>
+                <p style="color:#888; max-width:400px; line-height:1.6;">
+                    Vous n'avez pas encore validé d'événement. Participez aux workshops, scannez votre présence et débloquez vos récompenses !
+                </p>
+            </div>
+
+            {% endfor %}
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

@@ -3,118 +3,404 @@
 
 {% block content %}
 <link rel="stylesheet" href="{% static 'membres/css/hero.css' %}">
+<link rel="stylesheet" href="{% static 'membres/css/navbar.css' %}">
 
-<div class="hero-container" style="margin-bottom: 0; position: relative; z-index: 10; padding-bottom: 100px; overflow: hidden;">
-    
-    <div class="content-left" style="position: relative; z-index: 20;">
-        <h1 class="quote">
-            AI is likely to be   <br>
-            the best or the worst thing   <br>
-            to happen to humanity
+<div class="video-hero-container">
+    <video autoplay muted loop playsinline class="hero-video">
+        <source src="{% static 'membres/videos/hero_video.mp4' %}" type="video/mp4">
+        <img src="{% static 'membres/images/votre-photo.jpg' %}" alt="Background AI">
+    </video>
+
+    <div class="hero-overlay"></div>
+
+    <div class="hero-content">
+        <div class="badge-container animate-fade-up" style="animation-delay: 0.1s;">
+            <span class="season-badge">Saison 2025 • CNAI ESTM</span>
+        </div>
+
+        <h1 class="hero-title animate-fade-up" style="animation-delay: 0.3s;">
+            Forgeons L' <br>
+            <span class="gradient-text">Intelligence de Demain</span>
         </h1>
         
-        <div class="author-info">
-            <div class="author-name">Stephen Hawking</div>
-            <div class="author-title">British theoretical physicist</div>
+        <p class="hero-description animate-fade-up" style="animation-delay: 0.5s;">
+            Clever Nest AI est le pôle d'excellence étudiant pour l'IA et l'IoT.<br>
+            Pas de théorie inutile. Que du code, des projets et de l'innovation.
+        </p>
+
+        <div class="hero-buttons animate-fade-up" style="animation-delay: 0.7s;">
+            <a href="{% url 'events' %}" class="btn-main">
+                Découvrir le Club
+            </a>
+            <a href="{% url 'login' %}" class="btn-glass">
+                Espace Membre
+            </a>
         </div>
     </div>
-
-    <div class="image-right" style="position: relative; z-index: 20;">
-        <img src="{% static 'membres/images/votre-photo.jpg' %}" 
-             alt="Portrait" 
-             class="profile-image">
-    </div>
-
-    <div style="
-        position: absolute; 
-        bottom: 0; 
-        left: 0; 
-        width: 100%; 
-        height: 250px; 
-        background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, #000000 100%); 
-        z-index: 15;
-        pointer-events: none;">
-    </div>
-
 </div>
 
-<section class="pb-24 pt-10 bg-black relative z-10">
+<section class="passion-statement-section">
+    <div class="geo-shape shape-1"></div>
+    <div class="geo-shape shape-2"></div>
     
-    <div style="max-width: 1400px; margin: 0 auto; padding: 0 3rem; width: 100%;">
+    <div class="passion-content animate-fade-up">
+        <h3 class="passion-label">NOTRE MISSION ?</h3>
         
-        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-12 md:gap-8 text-center">
-            
-            <div class="feature-item animate-up delay-1 group cursor-default">
-                <div class="flex justify-center mb-6">
-                    <svg class="w-14 h-14 text-blue-500 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-                    </svg>
-                </div>
-                <h3 class="text-xl font-bold text-white mb-3">
-                    Projets <br> Réussis
-                </h3>
-                <p class="text-sm text-gray-400 leading-relaxed px-2">
-                    Des centaines de projets étudiants en IA. Participation aux hackathons nationaux.
-                </p>
-            </div>
-
-            <div class="feature-item animate-up delay-2 group cursor-default">
-                <div class="flex justify-center mb-6">
-                    <svg class="w-14 h-14 text-blue-500 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                    </svg>
-                </div>
-                <h3 class="text-xl font-bold text-white mb-3">
-                    Encadrement <br> Expert
-                </h3>
-                <p class="text-sm text-gray-400 leading-relaxed px-2">
-                    Un programme conçu par des étudiants seniors et des experts en Data Science.
-                </p>
-            </div>
-
-            <div class="feature-item animate-up delay-3 group cursor-default">
-                <div class="flex justify-center mb-6">
-                    <svg class="w-14 h-14 text-blue-500 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                    </svg>
-                </div>
-                <h3 class="text-xl font-bold text-white mb-3">
-                    Workshops <br> Interactifs
-                </h3>
-                <p class="text-sm text-gray-400 leading-relaxed px-2">
-                    Sessions de code en live, entraide et debugging en temps réel.
-                </p>
-            </div>
-
-            <div class="feature-item animate-up delay-4 group cursor-default">
-                <div class="flex justify-center mb-6">
-                    <svg class="w-14 h-14 text-blue-500 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
-                    </svg>
-                </div>
-                <h3 class="text-xl font-bold text-white mb-3">
-                    Parcours <br> Complet
-                </h3>
-                <p class="text-sm text-gray-400 leading-relaxed px-2">
-                    Du débutant à l'expert. Des bases de Python aux réseaux de neurones.
-                </p>
-            </div>
-
-            <div class="feature-item animate-up delay-5 group cursor-default">
-                <div class="flex justify-center mb-6">
-                    <svg class="w-14 h-14 text-blue-500 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                    </svg>
-                </div>
-                <h3 class="text-xl font-bold text-white mb-3">
-                    Ressources <br> & Datasets
-                </h3>
-                <p class="text-sm text-gray-400 leading-relaxed px-2">
-                    Accès à notre bibliothèque de code, datasets et tutoriels exclusifs.
-                </p>
-            </div>
-
-        </div>
+        <h1 class="passion-heading">
+            Coder  <span class="text-white"> l’intelligence </span><span class="text-white"></span><br>
+            Donner<span class="text-white"> vie </span> aux idées<br>
+            Façonner le<span class="gradient-text"> futur</span> dès aujourd’hui
+        </h1>
     </div>
 </section>
+
+<section class="manifesto-section">
+    <img src="{% static 'membres/images/club_meeting.png' %}" alt="Étudiants construisant l'avenir" class="manifesto-background-img">
+    
+    <div class="manifesto-content animate-fade-up">
+        
+        <h2 class="manifesto-title">L'avenir se code ligne par ligne.</h2>
+
+        <p class="manifesto-quote">
+            "Nous sommes le pont entre la théorie que l'on nous enseigne et la technologie que nous allons déployer."
+        </p>
+        
+        <a href="{% url 'events' %}" class="btn-glass">Voir nos Prochaines Missions</a>
+    </div>
+</section>
+
+<section class="presentation-section" style="margin-bottom: 0">
+    <div class="presentation-container">
+        
+        <div class="presentation-header animate-fade-up">
+            <h2 class="presentation-title">
+                De la curiosité  <br>
+                à la maîtrise de l’IA
+            </h2>
+            <p class="presentation-stats">
+                Chaque année, le CNAI accompagne une nouvelle génération à créer, coder et innover au sein de l’ecole.
+            </p>
+        </div>
+
+        <div class="cards-grid">
+            <div class="feature-card animate-fade-up" style="animation-delay: 0.2s;">
+                <div class="card-image-wrapper">
+                    <img src="{% static 'membres/images/club_meeting.png' %}" alt="Réunion du club" class="card-image">
+                </div>
+                <div class="card-content">
+                    <h3>Une Communauté Soudée</h3>
+                    <p>CNAI n'est pas juste un club, c'est une famille. Échangez, collaborez et grandissez avec des étudiants passionnés par la tech et l'innovation.</p>
+                </div>
+            </div>
+
+            <div class="feature-card animate-fade-up" style="animation-delay: 0.4s;">
+                <div class="card-image-wrapper">
+                    <img src="{% static 'membres/images/meet.png' %}" alt="Workshop Python" class="card-image">
+                </div>
+                <div class="card-content">
+                    <h3>Workshops Pratiques</h3>
+                    <p>Fini la théorie ennuyeuse. Apprenez Python, le Machine Learning et la Computer Vision à travers des ateliers concrets et interactifs.</p>
+                </div>
+            </div>
+
+            <div class="feature-card animate-fade-up" style="animation-delay: 0.6s;">
+                <div class="card-image-wrapper">
+                    <img src="{% static 'membres/images/ard.jpg' %}" alt="Projets IoT" class="card-image">
+                </div>
+                <div class="card-content">
+                    <h3>Projets Innovants</h3>
+                    <p>Passez de l'idée au prototype. Participez à des hackathons et développez des solutions réelles en utilisant l'IoT et l'IA.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<section style="background: #000; padding: 40px 20px 100px 20px; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 0;">
+    <h2 class="manifesto-title" style="text-align: center; margin-bottom: 40px;">DEVENEZ MEMBRES</h2>
+    
+    <div class="terminal-container animate-fade-up">
+        
+        <div class="clean-terminal">
+            <div class="terminal-header">
+                <div class="window-controls">
+                    <div class="control close"></div>
+                    <div class="control minimize"></div>
+                    <div class="control maximize"></div>
+                </div>
+                <span class="terminal-title">guest@cnai-estm:~</span>
+            </div>
+
+            <div class="terminal-body">
+                <div class="cmd-line">
+                    <span class="prompt-arrow">➜</span> <span class="prompt-path">~</span> <span class="cmd-txt">sudo</span> ./init_member.sh
+                </div>
+                
+                <div class="terminal-output">
+                    > Verifying student status... <span class="status-ok">[OK]</span><br>
+                    > Loading innovation modules... <span class="status-ok">[LOADED]</span><br>
+                    > Generating access key... <span class="status-ok">#CNAI-2025-ACCESS</span>
+                </div>
+
+                <div class="terminal-message">
+                    REMPLISSEZ LE FORMULAIRE POUR LE REJOINDRE L'AVENTURE.
+                </div>
+
+                <div style="margin-top: 25px;">
+                    <span class="prompt-arrow">➜</span> <span class="prompt-path">~</span> <span class="typing-cursor">|</span> <br><br>
+                    <a href="#" onclick="openModal(event)" class="clean-btn">
+                        [ REJOINDRE CNAI ]
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+
+
+<div id="joinModal" class="modal-overlay">
+    <div class="modal-window clean-terminal">
+        
+        <div class="terminal-header">
+            <div class="window-controls">
+                <div class="control close" onclick="closeModal()"></div>
+            </div>
+            <span class="terminal-title">send_application.exe</span>
+        </div>
+
+        <div class="terminal-body" style="text-align: left;">
+            <div class="terminal-message" style="margin-top: 0; margin-bottom: 20px; font-size: 1rem;">
+                > Initializing secure connection...<br>
+                > Please enter your credentials:
+            </div>
+
+            <form method="POST" action="{% url 'send_application' %}">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label class="cmd-txt">NOM:</label>
+                    <input type="text" name="name" class="terminal-input" placeholder="Votre Nom complet" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="cmd-txt">EMAIL:</label>
+                    <input type="email" name="email" class="terminal-input" placeholder="votre@email.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="cmd-txt">PHONE:</label>
+                    <input type="tel" name="telephone" class="terminal-input" placeholder="+212 6..." required>
+                </div>
+
+                <div class="form-group">
+                    <label class="cmd-txt">MESSAGE:</label>
+                    <textarea name="message" class="terminal-input" rows="3" placeholder="Pourquoi voulez-vous rejoindre le CNAI ?" required></textarea>
+                </div>
+
+                <button type="submit" class="clean-btn" style="width: 100%; margin-top: 10px;">
+                    [ ENVOYER ]
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* --- Styles du Terminal Principal --- */
+    .terminal-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    .clean-terminal {
+        background: #0f0f12; /* Fond noir mat */
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+        overflow: hidden;
+        font-family: 'Courier New', monospace;
+        transition: transform 0.3s ease;
+    }
+
+    .clean-terminal:hover {
+        transform: translateY(-5px);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .terminal-header {
+        background: #1a1a20;
+        padding: 12px 15px;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        position: relative;
+    }
+
+    .window-controls { display: flex; gap: 8px; }
+    .control { width: 12px; height: 12px; border-radius: 50%; opacity: 0.8; }
+    .close { background: #ff5f56; cursor: pointer; } 
+    .minimize { background: #ffbd2e; } 
+    .maximize { background: #27c93f; }
+
+    .terminal-title {
+        position: absolute; left: 50%; transform: translateX(-50%);
+        color: #555; font-size: 0.8rem; font-weight: 600; letter-spacing: 1px;
+    }
+
+    .terminal-body {
+        padding: 30px;
+        color: #cbd5e0;
+        line-height: 1.6;
+    }
+
+    /* Couleurs Syntaxe */
+    .prompt-arrow { color: #a855f7; font-weight: bold; }
+    .prompt-path { color: #60a5fa; font-weight: bold; }
+    .cmd-txt { color: #f1fa8c; font-weight: bold; }
+    .status-ok { color: #27c93f; }
+
+    .terminal-message {
+        margin-top: 25px;
+        color: white;
+        font-size: 1.2rem;
+        font-weight: 700;
+    }
+
+    .typing-cursor {
+        color: #a855f7;
+        animation: blink 1s step-end infinite;
+    }
+
+    /* Bouton Clean */
+    .clean-btn {
+        background: transparent;
+        color: #a855f7;
+        text-decoration: none;
+        padding: 12px 25px;
+        border: 1px solid #a855f7;
+        border-radius: 4px;
+        font-weight: 700;
+        display: inline-block;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+        letter-spacing: 1px;
+        cursor: pointer;
+    }
+
+    .clean-btn:hover {
+        background: rgba(168, 85, 247, 0.1);
+        color: white;
+        border-color: #d8b4fe;
+    }
+
+    /* --- Styles de la Modale (Pop-up) --- */
+    .modal-overlay {
+        display: none; /* Caché par défaut */
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(8px);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        padding: 20px; /* Marge de sécurité sur mobile */
+    }
+
+    .modal-overlay.active {
+        display: flex;
+        opacity: 1;
+    }
+
+    .modal-window {
+        width: 100%;
+        max-width: 500px;
+        
+        /* GESTION DU SCROLL SI L'ÉCRAN EST TROP PETIT */
+        max-height: 90vh; 
+        overflow-y: auto;
+        display: flex; flex-direction: column;
+        
+        transform: scale(0.95);
+        transition: transform 0.3s ease;
+        margin: 0 auto;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.9);
+    }
+
+    .modal-overlay.active .modal-window {
+        transform: scale(1);
+    }
+
+    /* Scrollbar custom pour le modal */
+    .modal-window::-webkit-scrollbar { width: 6px; }
+    .modal-window::-webkit-scrollbar-track { background: #0f0f12; }
+    .modal-window::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+    /* Formulaire */
+    .form-group { margin-bottom: 12px; }
+    
+    .terminal-input {
+        width: 100%;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: #fff;
+        padding: 10px;
+        font-family: 'Courier New', monospace;
+        margin-top: 5px;
+        border-radius: 4px;
+        outline: none;
+        font-size: 0.95rem;
+    }
+
+    .terminal-input:focus {
+        border-color: #a855f7;
+        background: rgba(168, 85, 247, 0.05);
+    }
+
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* Responsive Mobile */
+    @media (max-width: 600px) {
+        .terminal-body { padding: 20px; }
+        .terminal-title { display: none; }
+        .terminal-message { font-size: 1rem; }
+    }
+</style>
+
+<script>
+    function openModal(e) {
+        if(e) e.preventDefault();
+        const modal = document.getElementById('joinModal');
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Empêche le scroll de la page arrière
+    }
+
+    function closeModal() {
+        const modal = document.getElementById('joinModal');
+        modal.classList.remove('active');
+        document.body.style.overflow = ''; // Réactive le scroll
+    }
+
+    // Fermer si on clique en dehors de la fenêtre (sur le fond sombre)
+    document.getElementById('joinModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeModal();
+        }
+    });
+</script>
+
+
+
+
+
+
+
+
+
+
 {% endblock %}

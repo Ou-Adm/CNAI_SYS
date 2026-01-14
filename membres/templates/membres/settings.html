@@ -1,0 +1,104 @@
+{% extends 'membres/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="settings-container">
+    <div class="settings-box animate-fade-up">
+        
+        <div class="settings-header">
+            <h2>Paramètres du Profil</h2>
+            <p>Mettez à jour vos informations personnelles et votre photo.</p>
+        </div>
+
+        {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="photo-upload-section">
+                <div class="current-photo">
+                    {% if membre.photo %}
+                        <img src="{{ membre.photo.url }}" alt="Photo actuelle" id="photo-preview">
+                    {% else %}
+                        <div class="photo-placeholder" id="photo-placeholder">
+                            {{ membre.prenom|first }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="photo-actions">
+                    <label for="id_photo" class="btn-upload">Changer la photo</label>
+                    <input type="file" name="photo" id="id_photo" accept="image/*" onchange="previewImage(event)">
+                    <p class="photo-help">JPG, PNG ou GIF. Max 5Mo.</p>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                
+                <div class="form-group">
+                    <label>Prénom</label>
+                    {{ form.prenom }}
+                </div>
+
+                <div class="form-group">
+                    <label>Nom</label>
+                    {{ form.nom }}
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Email (Non modifiable)</label>
+                    {{ form.email }}
+                </div>
+
+                <div class="form-group">
+                    <label>Téléphone</label>
+                    {{ form.telephone }}
+                </div>
+
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-save">Enregistrer les modifications</button>
+                <a href="{% url 'profile' %}" class="btn-cancel">Annuler</a>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<script>
+    function previewImage(event) {
+        const reader = new FileReader();
+        reader.onload = function(){
+            const output = document.getElementById('photo-preview');
+            const placeholder = document.getElementById('photo-placeholder');
+            
+            if (output) {
+                output.src = reader.result;
+            } else if (placeholder) {
+                // Si pas d'image avant, on remplace le placeholder par une img
+                placeholder.replaceWith(Object.assign(document.createElement('img'), {
+                    src: reader.result,
+                    id: 'photo-preview',
+                    className: 'badge-photo' // Ajoute tes classes CSS si besoin
+                }));
+                // Note : il faudra peut-être ajuster le style ici selon ton CSS
+                document.getElementById('photo-preview').style.width = "100px";
+                document.getElementById('photo-preview').style.height = "100px";
+                document.getElementById('photo-preview').style.borderRadius = "50%";
+                document.getElementById('photo-preview').style.objectFit = "cover";
+            }
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+</script>
+
+{% endblock %}

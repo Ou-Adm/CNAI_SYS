@@ -1,0 +1,360 @@
+{% extends 'membres/base.html' %}
+{% load static %}
+
+{% block content %}
+
+<style>
+    /* =========================================
+       1. FOND ET AMBIANCE
+       ========================================= */
+    .ranking-section {
+        min-height: 100vh;
+        background: #050505;
+        position: relative;
+        padding: 120px 20px 80px 20px;
+        overflow: hidden;
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* Lumière d'ambiance violette derrière le podium */
+    .ambient-glow {
+        position: absolute;
+        width: 600px; height: 600px;
+        background: radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, transparent 70%);
+        top: 10%; left: 50%;
+        transform: translateX(-50%);
+        z-index: 0;
+        pointer-events: none;
+        animation: pulseGlow 5s infinite alternate;
+    }
+
+    @keyframes pulseGlow {
+        0% { opacity: 0.5; transform: translateX(-50%) scale(1); }
+        100% { opacity: 0.8; transform: translateX(-50%) scale(1.1); }
+    }
+
+    .ranking-container {
+        position: relative;
+        z-index: 1;
+        max-width: 1000px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* =========================================
+       2. TITRE & HEADER
+       ========================================= */
+    .ranking-header {
+        text-align: center;
+        margin-bottom: 60px;
+    }
+
+    .ranking-header h2 {
+        font-size: 3.5rem;
+        font-weight: 900;
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: -2px;
+        margin-bottom: 10px;
+        background: -webkit-linear-gradient(45deg, #fff, #a855f7);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .user-rank-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 50px;
+        color: #d1d5db;
+        font-size: 0.9rem;
+        backdrop-filter: blur(10px);
+    }
+    .user-rank-pill strong { color: #a855f7; margin-left: 5px; }
+
+    /* =========================================
+       3. PODIUM (CYBER STYLE)
+       ========================================= */
+    .podium-wrapper {
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 20px;
+        margin-bottom: 80px;
+        width: 100%;
+    }
+
+    .podium-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 20px;
+        text-align: center;
+        width: 200px;
+        position: relative;
+        backdrop-filter: blur(10px);
+        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+
+    .podium-card:hover {
+        transform: translateY(-10px) scale(1.02);
+        border-color: rgba(255,255,255,0.2);
+    }
+
+    /* --- Styles par position --- */
+    
+    /* 1ère Place (OR) */
+    .place-1 { 
+        order: 2; /* Visuellement au milieu */
+        height: 320px; 
+        border: 1px solid rgba(255, 215, 0, 0.3);
+        background: linear-gradient(180deg, rgba(255, 215, 0, 0.05) 0%, rgba(20,20,20,0.8) 100%);
+        box-shadow: 0 0 50px rgba(255, 215, 0, 0.15);
+        z-index: 10;
+    }
+    
+    /* 2ème Place (ARGENT) */
+    .place-2 { order: 1; height: 260px; }
+    
+    /* 3ème Place (BRONZE) */
+    .place-3 { order: 3; height: 240px; }
+
+    /* --- Images de profil --- */
+    .podium-img-container {
+        position: relative;
+        margin: 0 auto 20px auto;
+        width: 100px; height: 100px;
+    }
+    .place-1 .podium-img-container { width: 120px; height: 120px; margin-top: 10px; }
+
+    .podium-img {
+        width: 100%; height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid rgba(255,255,255,0.1);
+        background: #222;
+    }
+
+    /* --- Badge Numéro (1, 2, 3) --- */
+    .rank-badge {
+        position: absolute;
+        bottom: -10px; left: 50%; transform: translateX(-50%);
+        width: 32px; height: 32px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 800; font-size: 0.9rem; color: #000;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+    
+    .place-1 .rank-badge { background: #FFD700; color: #5c4d00; content: "1"; }
+    .place-2 .rank-badge { background: #C0C0C0; color: #333; }
+    .place-3 .rank-badge { background: #CD7F32; color: #3e2211; }
+    .place-1 .podium-img { border-color: #FFD700; }
+
+    /* --- Textes --- */
+    .podium-name {
+        color: white; font-weight: 700; font-size: 1.1rem;
+        margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .podium-pts {
+        font-family: 'Courier New', monospace;
+        color: #a855f7; font-weight: bold; font-size: 0.9rem;
+        background: rgba(168, 85, 247, 0.1);
+        padding: 4px 10px; border-radius: 6px;
+        display: inline-block;
+    }
+    .place-1 .podium-pts { color: #FFD700; background: rgba(255, 215, 0, 0.1); }
+
+    /* --- NOUVELLE COURONNE MINIMALISTE --- */
+    .crown {
+        position: absolute;
+        top: -60px; /* Position ajustée */
+        left: 50%;
+        transform: translateX(-50%);
+        width: 50px;
+        height: 50px;
+        z-index: 20;
+        /* Ombre douce au lieu du néon agressif */
+        filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)); 
+        animation: floatCrown 3s ease-in-out infinite;
+    }
+
+    @keyframes floatCrown { 
+        0%, 100% { transform: translate(-50%, 0); } 
+        50% { transform: translate(-50%, -8px); } /* Juste un mouvement vertical doux */
+    }
+
+
+    /* =========================================
+       4. LISTE (LIST STYLE)
+       ========================================= */
+    .list-wrapper {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding-bottom: 40px;
+    }
+
+    .rank-card {
+        display: flex;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 15px 20px;
+        transition: all 0.2s ease;
+    }
+
+    .rank-card:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(168, 85, 247, 0.3);
+        transform: translateX(5px);
+    }
+
+    /* Style si c'est l'utilisateur connecté */
+    .rank-card.is-me {
+        background: linear-gradient(90deg, rgba(168, 85, 247, 0.1), transparent);
+        border-left: 3px solid #a855f7;
+    }
+
+    .rc-rank {
+        width: 40px; font-weight: 700; color: #666; font-size: 1.1rem;
+    }
+    .rc-img {
+        width: 45px; height: 45px; border-radius: 12px;
+        object-fit: cover; margin-right: 15px;
+        background: #222;
+    }
+    .rc-placeholder {
+        width: 45px; height: 45px; border-radius: 12px;
+        background: #222; color: #555; display: flex; align-items: center; justify-content: center;
+        font-weight: bold; margin-right: 15px;
+    }
+    .rc-info { flex: 1; }
+    .rc-name { display: block; color: white; font-weight: 600; font-size: 1rem; }
+    .rc-filiere { display: block; color: #888; font-size: 0.8rem; margin-top: 2px; }
+    
+    .rc-points {
+        font-family: 'Courier New', monospace;
+        font-weight: 700; color: #e5e5e5; font-size: 1.1rem;
+    }
+    
+    /* Responsive Mobile */
+    @media (max-width: 768px) {
+        .podium-wrapper {
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+        .place-1 { order: 1; width: 100%; max-width: 280px; height: auto; padding-bottom: 30px; margin-bottom: 20px; }
+        .place-2, .place-3 { width: 100%; max-width: 280px; height: auto; }
+        .place-2 { order: 2; }
+        .place-3 { order: 3; }
+        
+        .ranking-header h2 { font-size: 2.5rem; }
+    }
+
+</style>
+
+<div class="ranking-section">
+    <div class="ambient-glow"></div>
+
+    <div class="ranking-container animate-fade-up">
+
+        <div class="ranking-header">
+            <h2>Leaderboard</h2>
+            <div class="user-rank-pill">
+                Votre position actuelle : <strong>#{{ my_rank }}</strong>
+            </div>
+        </div>
+
+        <div class="podium-wrapper">
+            
+            {% if top3|length >= 2 %}
+            <div class="podium-card place-2">
+                <div class="podium-img-container">
+                    {% if top3.1.photo %}
+                        <img src="{{ top3.1.photo.url }}" class="podium-img">
+                    {% else %}
+                        <div class="podium-img" style="background:#222; display:flex; align-items:center; justify-content:center; color:#555; font-size:1.5rem;">{{ top3.1.prenom|first }}</div>
+                    {% endif %}
+                    <div class="rank-badge">2</div>
+                </div>
+                <div class="podium-name">{{ top3.1.prenom }} {{ top3.1.nom }}</div>
+                <div class="podium-pts">{{ top3.1.points }} XP</div>
+            </div>
+            {% endif %}
+
+            {% if top3|length >= 1 %}
+            <div class="podium-card place-1">
+                
+                <div class="crown">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5Z" fill="#FFD700"/>
+                    </svg>
+                </div>
+                <div class="podium-img-container">
+                    {% if top3.0.photo %}
+                        <img src="{{ top3.0.photo.url }}" class="podium-img">
+                    {% else %}
+                        <div class="podium-img" style="background:#222; display:flex; align-items:center; justify-content:center; color:#555; font-size:2rem;">{{ top3.0.prenom|first }}</div>
+                    {% endif %}
+                    <div class="rank-badge">1</div>
+                </div>
+                <div class="podium-name">{{ top3.0.prenom }} {{ top3.0.nom }}</div>
+                <div class="podium-pts">{{ top3.0.points }} XP</div>
+            </div>
+            {% endif %}
+
+            {% if top3|length >= 3 %}
+            <div class="podium-card place-3">
+                <div class="podium-img-container">
+                    {% if top3.2.photo %}
+                        <img src="{{ top3.2.photo.url }}" class="podium-img">
+                    {% else %}
+                        <div class="podium-img" style="background:#222; display:flex; align-items:center; justify-content:center; color:#555; font-size:1.5rem;">{{ top3.2.prenom|first }}</div>
+                    {% endif %}
+                    <div class="rank-badge">3</div>
+                </div>
+                <div class="podium-name">{{ top3.2.prenom }} {{ top3.2.nom }}</div>
+                <div class="podium-pts">{{ top3.2.points }} XP</div>
+            </div>
+            {% endif %}
+
+        </div>
+
+        {% if rest_of_list %}
+        <div class="list-wrapper">
+            {% for m in rest_of_list %}
+            <div class="rank-card {% if m.id == membre.id %}is-me{% endif %}">
+                <div class="rc-rank">#{{ forloop.counter|add:3 }}</div>
+                
+                {% if m.photo %}
+                    <img src="{{ m.photo.url }}" class="rc-img">
+                {% else %}
+                    <div class="rc-placeholder">{{ m.prenom|first }}</div>
+                {% endif %}
+
+                <div class="rc-info">
+                    <span class="rc-name">{{ m.prenom }} {{ m.nom }}</span>
+                    <span class="rc-filiere">{{ m.filliere }}</span>
+                </div>
+
+                <div class="rc-points">{{ m.points }} XP</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+            <p style="text-align:center; color:#555; margin-top:20px;">Le classement se remplit petit à petit...</p>
+        {% endif %}
+
+    </div>
+</div>
+
+{% endblock %}

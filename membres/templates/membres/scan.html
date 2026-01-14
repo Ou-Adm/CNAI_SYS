@@ -2,427 +2,485 @@
 {% load static %}
 
 {% block content %}
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
 <style>
-    .scan-section {
-        background: #000000;
-        padding: 80px 20px;
+    /* --- 1. CONFIGURATION GÉNÉRALE --- */
+    :root {
+        --glass-bg: rgba(22, 22, 27, 0.7);
+        --glass-border: rgba(255, 255, 255, 0.08);
+        --accent: #667eea;
+        --accent-hover: #5a67d8;
+        --success: #10b981;
+        --error: #ef4444;
+    }
+
+    .scan-page-wrapper {
         min-height: 100vh;
-    }
-
-    .scan-container {
-        max-width: 1200px;
-        margin: 0 auto;
-    }
-
-    .scan-header {
-        text-align: center;
-        margin-bottom: 50px;
-    }
-
-    .scan-header h1 {
-        font-size: 48px;
-        font-weight: 700;
-        color: white;
-        margin-bottom: 20px;
-    }
-
-    .scan-header p {
-        font-size: 16px;
-        color: #cbd5e0;
-        max-width: 600px;
-        margin: 0 auto;
-    }
-
-    .scan-wrapper {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 3rem;
-        align-items: start;
-    }
-
-    .scan-form {
-        display: flex;
-        flex-direction: column;
-        gap: 2rem;
-    }
-
-    .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-
-    .form-group label {
-        font-size: 0.95rem;
-        font-weight: 600;
-        color: #e0e0e0;
-    }
-
-    .form-group select,
-    .form-group input {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 0.875rem 1rem;
-        border-radius: 0.6rem;
-        color: white;
-        font-size: 1rem;
-    }
-
-    .form-group select:focus,
-    .form-group input:focus {
-        outline: none;
-        border-color: rgba(102, 126, 234, 0.5);
-        background: rgba(102, 126, 234, 0.05);
-    }
-
-    .tab-buttons {
-        display: flex;
-        gap: 1rem;
-    }
-
-    .tab-btn {
-        flex: 1;
-        padding: 0.875rem;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        background: rgba(255, 255, 255, 0.05);
-        color: #cbd5e0;
-        border-radius: 0.6rem;
-        cursor: pointer;
-        font-weight: 600;
-    }
-
-    .tab-btn.active {
-        background: rgba(102, 126, 234, 0.15);
-        border-color: rgba(102, 126, 234, 0.5);
-        color: white;
-    }
-
-    .camera-section {
-        display: none;
-    }
-
-    .camera-section.active {
-        display: block;
-    }
-
-    #video {
         width: 100%;
-        border-radius: 0.8rem;
         background: #000;
-        margin-bottom: 1.5rem;
-        border: 1px solid rgba(102, 126, 234, 0.2);
+        /* Image de fond subtile ou dégradé si tu veux, ici noir pur pro */
+        background-image: radial-gradient(circle at 50% 0%, #1a1a2e 0%, #000 60%);
+        
+        /* PADDING IMPORTANT POUR ÉVITER LE CHEVAUCHEMENT NAVBAR */
+        padding-top: 100px; 
+        padding-bottom: 40px;
+        padding-left: 20px;
+        padding-right: 20px;
+        box-sizing: border-box;
+        
+        display: flex;
+        justify-content: center;
+        align-items: flex-start; /* Aligne en haut pour éviter le centrage vertical gênant sur petit écran */
     }
 
-    .camera-controls {
+    .scan-dashboard {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr; /* PC : Caméra plus large que contrôles */
+        gap: 25px;
+        width: 100%;
+        max-width: 1100px;
+    }
+
+    /* --- RESPONSIVE MOBILE (Passage en colonne) --- */
+    @media (max-width: 900px) {
+        .scan-dashboard {
+            grid-template-columns: 1fr; /* Une seule colonne */
+        }
+        .scan-page-wrapper {
+            padding-top: 85px; /* Un peu moins haut sur mobile */
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+        /* Sur mobile, on veut que l'ordre soit : Caméra d'abord, contrôles ensuite */
+        .card-camera { order: 1; }
+        .card-controls { order: 2; }
+    }
+
+    /* --- 2. STYLE DES CARTES (GLASSMORPHISM) --- */
+    .dashboard-card {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 24px;
+        padding: 25px;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.4);
         display: flex;
         flex-direction: column;
-        gap: 1rem;
     }
 
-    .scan-btn, .camera-btn {
-        padding: 1rem;
-        background: rgba(102, 126, 234, 0.1);
-        border: 1px solid rgba(102, 126, 234, 0.3);
-        color: #aabaff;
-        border-radius: 0.6rem;
+    /* --- 3. ZONE CAMÉRA --- */
+    .card-camera {
+        position: relative;
+        overflow: hidden;
+        min-height: 350px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .camera-frame {
+        width: 100%;
+        height: 100%;
+        border-radius: 16px;
+        overflow: hidden;
+        background: #000;
+        border: 2px solid #333;
+        position: relative;
+        aspect-ratio: 4/3; /* Ratio standard vidéo */
+    }
+    
+    #reader { width: 100%; height: 100%; object-fit: cover; }
+    
+    /* Animation Laser */
+    .laser-scan {
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 2px;
+        background: rgba(102, 126, 234, 0.8);
+        box-shadow: 0 0 15px #667eea;
+        z-index: 5;
+        animation: scanAnim 3s infinite linear;
+        display: none; /* Caché par défaut */
+    }
+    .camera-frame.active .laser-scan { display: block; }
+
+    @keyframes scanAnim {
+        0% { top: 10%; opacity: 0; }
+        50% { opacity: 1; }
+        100% { top: 90%; opacity: 0; }
+    }
+
+    /* Overlay Start */
+    .start-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,0.85);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
         cursor: pointer;
-        font-weight: 600;
-        font-size: 1rem;
+        transition: 0.3s;
+    }
+    .start-overlay:hover { background: rgba(0,0,0,0.7); }
+    .start-icon {
+        width: 70px; height: 70px;
+        background: var(--accent);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 0 30px rgba(102, 126, 234, 0.4);
+        margin-bottom: 15px;
     }
 
-    .scan-btn:hover, .camera-btn:hover {
-        background: rgba(102, 126, 234, 0.2);
+    /* --- 4. ZONE CONTRÔLES --- */
+    .card-controls h2 {
+        font-size: 20px; font-weight: 700; color: white; margin-bottom: 20px;
+        border-bottom: 1px solid var(--glass-border); padding-bottom: 15px;
+    }
+
+    .control-group { margin-bottom: 20px; }
+    .control-label {
+        display: block; color: #a0aec0; font-size: 13px; font-weight: 600;
+        margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;
+    }
+
+    .modern-select, .modern-input {
+        width: 100%;
+        background: rgba(0,0,0,0.3);
+        border: 1px solid var(--glass-border);
         color: white;
+        padding: 14px;
+        border-radius: 12px;
+        font-size: 15px;
+        outline: none;
+        transition: 0.3s;
     }
+    .modern-select:focus, .modern-input:focus { border-color: var(--accent); background: rgba(0,0,0,0.5); }
+    .modern-select option { background: #111; color: white; }
 
-    .stop-btn {
-        background: rgba(220, 53, 69, 0.1);
-        border-color: rgba(220, 53, 69, 0.3);
-        color: #ff8a9b;
-        display: none;
+    /* Switch Tabs */
+    .mode-switch {
+        display: flex;
+        background: rgba(0,0,0,0.3);
+        padding: 5px;
+        border-radius: 12px;
+        border: 1px solid var(--glass-border);
     }
-
-    #manualTab {
-        display: none;
-    }
-
-    .info-box {
-        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-        border: 1px solid rgba(102, 126, 234, 0.2);
-        padding: 1.5rem;
-        border-radius: 0.8rem;
-    }
-
-    .info-box h3 {
-        font-size: 14px;
-        color: #9bb5ff;
-        margin-bottom: 0.5rem;
+    .mode-btn {
+        flex: 1;
+        padding: 10px;
+        text-align: center;
+        border-radius: 8px;
+        cursor: pointer;
+        color: #718096;
         font-weight: 600;
+        transition: 0.3s;
+    }
+    .mode-btn.active {
+        background: var(--accent);
+        color: white;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
 
-    .info-box p {
-        color: #cbd5e0;
-        font-size: 14px;
-        margin: 0;
+    /* Bouton Action */
+    .action-btn {
+        width: 100%;
+        padding: 16px;
+        background: var(--accent);
+        color: white;
+        font-weight: 800;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: 0.2s;
+        margin-top: 10px;
     }
+    .action-btn:hover { background: var(--accent-hover); }
+    .action-btn:active { transform: scale(0.98); }
 
-    .result-success {
-        background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(40, 167, 69, 0.05));
-        border: 1px solid rgba(40, 167, 69, 0.3);
-        border-radius: 0.8rem;
-        padding: 2rem;
-        display: none;
+    /* Status Dot */
+    .status-indicator {
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        margin-top: auto; padding-top: 20px;
+        font-size: 13px; color: #718096;
     }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #444; }
+    .dot.active { background: var(--success); box-shadow: 0 0 10px var(--success); }
 
-    .result-success.show {
-        display: block;
+    /* --- 5. POPUPS --- */
+    /* Succès - Centré, Moderne */
+    .popup-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+        z-index: 9990; display: none;
     }
+    
+    .popup-card {
+        position: fixed; top: 50%; left: 50%;
+        transform: translate(-50%, -50%) scale(0.9);
+        background: #18181b;
+        border: 1px solid rgba(255,255,255,0.1);
+        padding: 40px 30px;
+        border-radius: 30px;
+        text-align: center;
+        z-index: 9999;
+        width: 90%; max-width: 380px;
+        box-shadow: 0 25px 80px rgba(0,0,0,0.8);
+        display: none; opacity: 0;
+        transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .popup-card.show { display: block; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    
+    .success-ring {
+        width: 80px; height: 80px; margin: 0 auto 20px;
+        border-radius: 50%; border: 4px solid rgba(16, 185, 129, 0.2);
+        display: flex; align-items: center; justify-content: center;
+    }
+    .success-icon { width: 40px; height: 40px; color: var(--success); }
 
-    .result-success h2 {
-        color: #28a745;
-        margin: 0 0 1rem 0;
-        font-size: 28px;
-        font-weight: 700;
-    }
+    .popup-name { font-size: 24px; font-weight: 700; color: white; margin-bottom: 5px; }
+    .popup-sub { font-size: 16px; color: var(--success); font-weight: 600; margin-bottom: 15px; }
+    .popup-badge { background: #222; padding: 5px 12px; border-radius: 20px; color: #aaa; font-size: 13px; }
 
-    .error-message {
-        background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(255, 107, 107, 0.05));
-        border: 1px solid rgba(255, 107, 107, 0.3);
-        border-radius: 0.8rem;
-        padding: 1.5rem;
-        display: none;
-        color: #ff8a9b;
+    /* Erreur - Toast haut */
+    .error-toast {
+        position: fixed; top: 110px; left: 50%; transform: translateX(-50%) translateY(-20px);
+        background: #3f1515; border: 1px solid #ef4444; color: #fca5a5;
+        padding: 12px 24px; border-radius: 50px; font-weight: 600;
+        z-index: 10000; opacity: 0; transition: 0.3s; pointer-events: none;
     }
+    .error-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-    .error-message.show {
-        display: block;
-    }
-
-    #canvas {
-        display: none;
-    }
-
-    .status {
-        font-size: 12px;
-        color: #9bb5ff;
-        margin-top: 0.5rem;
-    }
-
-    @media (max-width: 968px) {
-        .scan-wrapper {
-            grid-template-columns: 1fr;
-        }
-    }
 </style>
 
-<div class="scan-section">
-    <div class="scan-container">
-        <div class="scan-header">
-            <h1>📱 Scanner QR Code</h1>
-            <p>Scannez le QR code d'un membre</p>
+<div class="scan-page-wrapper">
+    
+    <audio id="snd-success" src="{% static 'membres/sounds/succes.mp3' %}" preload="auto"></audio>
+    <audio id="snd-error" src="{% static 'membres/sounds/error.mp3' %}" preload="auto"></audio>
+
+    <div class="scan-dashboard">
+        
+        <div class="dashboard-card card-camera">
+            <div id="camera-frame" class="camera-frame">
+                <div class="laser-scan"></div>
+                
+                <div id="start-overlay" class="start-overlay" onclick="initScanner()">
+                    <div class="start-icon">
+                        <svg style="width:32px;height:32px;color:white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <h3 style="color:white; font-weight:700; font-size:18px;">Activer le Scanner</h3>
+                </div>
+                
+                <div id="reader"></div>
+            </div>
+            
+            <div class="status-indicator">
+                <div id="status-dot" class="dot"></div>
+                <span id="status-text">Scanner en pause</span>
+            </div>
         </div>
 
-        <div class="scan-wrapper">
-            <div class="scan-form">
-                <div class="form-group">
-                    <label for="evenement">Sélectionnez un événement</label>
-                    <select id="evenement">
-                        <option value="">-- Choisir --</option>
-                        {% for evt in evenements %}
-                            <option value="{{ evt.id }}">{{ evt.titre }} ({{ evt.nombre_jours }}j)</option>
-                        {% endfor %}
-                    </select>
-                </div>
+        <div class="dashboard-card card-controls">
+            <h2>Paramètres</h2>
 
-                <div class="tab-buttons">
-                    <button class="tab-btn active" data-tab="camera">📷 Caméra</button>
-                    <button class="tab-btn" data-tab="manual">✏️ Manuel</button>
-                </div>
+            <div class="control-group">
+                <label class="control-label">Événement en cours</label>
+                <select id="evenement" class="modern-select">
+                    <option value="">-- Sélectionner --</option>
+                    {% for evt in evenements %}
+                        <option value="{{ evt.id }}">{{ evt.titre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
-                <div class="camera-section active" id="cameraTab">
-                    <video id="video" playsinline autoplay muted></video>
-                    <div class="status" id="status"></div>
-                    <div class="camera-controls">
-                        <button class="camera-btn" id="startCamera">🎥 Démarrer caméra</button>
-                        <button class="stop-btn" id="stopCamera">⏹️ Arrêter</button>
-                    </div>
-                    <canvas id="canvas"></canvas>
-                </div>
-
-                <div id="manualTab">
-                    <div class="form-group">
-                        <label for="uuid_input">UUID du QR code</label>
-                        <input type="text" id="uuid_input" placeholder="Collez l'UUID..."/>
-                    </div>
-                    <button class="scan-btn" id="submitBtn">✅ Confirmer</button>
+            <div class="control-group">
+                <label class="control-label">Mode de saisie</label>
+                <div class="mode-switch">
+                    <div id="tab-cam" class="mode-btn active" onclick="switchMode('cam')">Caméra</div>
+                    <div id="tab-man" class="mode-btn" onclick="switchMode('man')">Manuel</div>
                 </div>
             </div>
 
-            <div>
-                <div class="info-box">
-                    <h3>📌 Mode Manuel</h3>
-                    <p>Si la caméra ne fonctionne pas, utilisez l'onglet "Manuel" et collez l'UUID directement.</p>
-                </div>
+            <div id="manual-zone" class="control-group" style="display: none;">
+                <label class="control-label">Code UUID</label>
+                <input type="text" id="uuid_input" class="modern-input" placeholder="Coller le code ici..." autocomplete="off">
+                <button class="action-btn" onclick="manualSubmit()">Valider le Code</button>
+            </div>
 
-                <div id="result" class="result-success">
-                    <div id="resultContent"></div>
-                </div>
-
-                <div id="error" class="error-message">
-                    <span id="errorMessage"></span>
-                </div>
+            <div style="margin-top: auto; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 12px;">
+                <p style="font-size: 13px; color: #718096; line-height: 1.4;">
+                    Assurez-vous de sélectionner l'événement avant de scanner. Les points seront ajoutés automatiquement.
+                </p>
             </div>
         </div>
+
     </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.4/jsQR.js"></script>
+<div id="popup-overlay" class="popup-overlay"></div>
+
+<div id="success-popup" class="popup-card">
+    <div class="success-ring">
+        <svg class="success-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+    </div>
+    <div id="popup-name" class="popup-name">Nom Étudiant</div>
+    <div id="popup-info" class="popup-sub">+ Points</div>
+    <div class="popup-badge">Scan Validé</div>
+</div>
+
+<div id="error-toast" class="error-toast">Erreur inconnue</div>
 
 <script>
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const startBtn = document.getElementById('startCamera');
-    const stopBtn = document.getElementById('stopCamera');
-    const status = document.getElementById('status');
-    let stream = null;
+    const sndSuccess = document.getElementById('snd-success');
+    const sndError = document.getElementById('snd-error');
+    
+    let html5QrCode = null;
     let isScanning = false;
+    let soundUnlocked = false;
 
-    // Tabs
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const tab = this.getAttribute('data-tab');
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            
-            document.getElementById('cameraTab').style.display = tab === 'camera' ? 'block' : 'none';
-            document.getElementById('manualTab').style.display = tab === 'manual' ? 'block' : 'none';
-        });
-    });
-
-    startBtn.addEventListener('click', async () => {
-        try {
-            stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
-            });
-            video.srcObject = stream;
-            startBtn.style.display = 'none';
-            stopBtn.style.display = 'block';
-            status.textContent = '⏳ Scanning...';
-            isScanning = true;
-            scanQRCode();
-        } catch (err) {
-            showError('❌ Erreur caméra: ' + err.message);
+    // --- 1. INITIALISATION ---
+    function initScanner() {
+        if (!soundUnlocked) {
+            sndSuccess.play().then(() => { sndSuccess.pause(); sndSuccess.currentTime = 0; }).catch(()=>{});
+            sndError.play().then(() => { sndError.pause(); sndError.currentTime = 0; }).catch(()=>{});
+            soundUnlocked = true;
         }
-    });
-
-    stopBtn.addEventListener('click', () => {
-        if (stream) stream.getTracks().forEach(t => t.stop());
-        isScanning = false;
-        startBtn.style.display = 'block';
-        stopBtn.style.display = 'none';
-        status.textContent = '';
-    });
-
-    function scanQRCode() {
-        const ctx = canvas.getContext('2d', { willReadFrequently: true });
-
-        const scan = () => {
-            if (video.readyState === video.HAVE_ENOUGH_DATA && isScanning) {
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                ctx.drawImage(video, 0, 0);
-
-                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                const code = jsQR(imageData.data, imageData.width, imageData.height);
-
-                if (code && code.data) {
-                    status.textContent = '✅ QR Code détecté!';
-                    const uuid = code.data;
-                    const evenement_id = document.getElementById('evenement').value;
-
-                    if (!evenement_id) {
-                        showError('Sélectionnez un événement');
-                    } else {
-                        isScanning = false;
-                        performScan(uuid, evenement_id);
-                        if (stream) stream.getTracks().forEach(t => t.stop());
-                        startBtn.style.display = 'block';
-                        stopBtn.style.display = 'none';
-                        status.textContent = '';
-                    }
-                    return;
-                }
-            }
-
-            if (isScanning) {
-                requestAnimationFrame(scan);
-            }
-        };
-
-        scan();
+        document.getElementById('start-overlay').style.display = 'none';
+        startCamera();
     }
 
-    document.getElementById('submitBtn').addEventListener('click', () => {
-        const uuid = document.getElementById('uuid_input').value.trim();
-        const evenement_id = document.getElementById('evenement').value;
+    // --- 2. CAMÉRA ---
+    function startCamera() {
+        const config = { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 };
+        
+        html5QrCode = new Html5Qrcode("reader");
 
-        if (!uuid) {
-            showError('Entrez un UUID');
+        html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, ()=>{})
+        .then(() => {
+            updateStatus(true, "Scanner Actif • En attente de code");
+            document.querySelector('.camera-frame').classList.add('active'); // Active le laser
+            isScanning = true;
+        })
+        .catch(err => {
+            updateStatus(false, "Erreur Caméra");
+            showError("Caméra inaccessible");
+        });
+    }
+
+    function updateStatus(active, text) {
+        document.getElementById('status-text').innerText = text;
+        const dot = document.getElementById('status-dot');
+        if(active) dot.classList.add('active'); else dot.classList.remove('active');
+    }
+
+    // --- 3. TRAITEMENT SCAN ---
+    function onScanSuccess(decodedText) {
+        if (!isScanning) return;
+
+        const evtId = document.getElementById('evenement').value;
+        if (!evtId) {
+            showError("⚠️ Sélectionnez un événement à droite !");
             return;
         }
-        if (!evenement_id) {
-            showError('Sélectionnez un événement');
-            return;
-        }
 
-        performScan(uuid, evenement_id);
-    });
+        pauseSystem();
 
-    function performScan(uuid, evenement_id) {
-        fetch('/api/scan-qr/', {
+        fetch("{% url 'scan_qr_code' %}", {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            body: JSON.stringify({ uuid_code: uuid, evenement_id: parseInt(evenement_id) })
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+            body: JSON.stringify({ uuid_code: decodedText, evenement_id: parseInt(evtId) })
         })
         .then(r => r.json())
         .then(data => {
             if (data.success) {
-                document.getElementById('result').classList.add('show');
-                document.getElementById('error').classList.remove('show');
-                document.getElementById('resultContent').innerHTML = `
-                    <h2>✅ ${data.data.nom}</h2>
-                    <div style="color: #cbd5e0; margin-top: 1rem;">
-                        <div>+${data.data.points_gaines} pts | Total: ${data.data.points_total} pts</div>
-                        <div>Jours: ${data.data.jours_assistes}/${data.data.jours_requis}</div>
-                        ${data.data.nouveau_certificat ? `<div style="color: #ffd700; margin-top: 1rem;">🎓 ${data.data.message_certificat}</div>` : ''}
-                    </div>
-                `;
-                document.getElementById('uuid_input').value = '';
-                setTimeout(() => document.getElementById('result').classList.remove('show'), 4000);
+                showSuccess(data.data);
             } else {
                 showError(data.message);
+                setTimeout(resumeSystem, 2500);
             }
         })
-        .catch(e => showError('❌ Erreur: ' + e));
+        .catch(() => {
+            showError("Erreur serveur");
+            setTimeout(resumeSystem, 2500);
+        });
+    }
+
+    function pauseSystem() {
+        html5QrCode.pause();
+        isScanning = false;
+        document.querySelector('.camera-frame').classList.remove('active');
+        updateStatus(true, "Analyse en cours...");
+    }
+
+    function resumeSystem() {
+        try { 
+            html5QrCode.resume(); 
+            isScanning = true;
+            document.querySelector('.camera-frame').classList.add('active');
+            updateStatus(true, "Scanner Actif");
+        } catch(e) {}
+    }
+
+    // --- 4. FEEDBACK VISUEL & SONORE ---
+    function showSuccess(data) {
+        sndSuccess.currentTime = 0; sndSuccess.play().catch(e=>{});
+
+        document.getElementById('popup-name').innerText = data.nom;
+        let info = `+${data.points_gaines || 0} Points`;
+        if(data.nouveau_certificat) info = "🎓 CERTIFICAT OBTENU !";
+        document.getElementById('popup-info').innerText = info;
+
+        // Afficher Popup
+        document.getElementById('popup-overlay').style.display = 'block';
+        const popup = document.getElementById('success-popup');
+        popup.classList.add('show');
+
+        setTimeout(() => {
+            popup.classList.remove('show');
+            document.getElementById('popup-overlay').style.display = 'none';
+            resumeSystem();
+        }, 2000);
     }
 
     function showError(msg) {
-        document.getElementById('error').classList.add('show');
-        document.getElementById('result').classList.remove('show');
-        document.getElementById('errorMessage').textContent = msg;
-        setTimeout(() => document.getElementById('error').classList.remove('show'), 5000);
+        if(soundUnlocked) { sndError.currentTime = 0; sndError.play().catch(e=>{}); }
+        
+        const toast = document.getElementById('error-toast');
+        toast.innerText = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // --- 5. LOGIQUE INTERFACE ---
+    window.switchMode = function(mode) {
+        // UI Tabs
+        document.getElementById('tab-cam').classList.toggle('active', mode==='cam');
+        document.getElementById('tab-man').classList.toggle('active', mode==='man');
+
+        if(mode === 'cam') {
+            document.getElementById('manual-zone').style.display = 'none';
+            // Si le scanner était démarré, on le resume
+            if(html5QrCode && !isScanning) try{ html5QrCode.resume(); isScanning=true; } catch(e){}
+        } else {
+            document.getElementById('manual-zone').style.display = 'block';
+            if(html5QrCode && isScanning) try{ html5QrCode.pause(); isScanning=false; } catch(e){}
+        }
+    }
+
+    window.manualSubmit = function() {
+        const code = document.getElementById('uuid_input').value;
+        if(!code) return showError("Le code est vide");
+        onScanSuccess(code); // On réutilise la même fonction
     }
 
     function getCookie(name) {
-        for (let c of document.cookie.split(';')) {
-            if (c.trim().startsWith(name + '=')) {
-                return decodeURIComponent(c.trim().substring(name.length + 1));
-            }
-        }
-        return '';
+        if (!document.cookie) return null;
+        const xsrf = document.cookie.split('; ').find(row => row.startsWith(name + '='));
+        return xsrf ? decodeURIComponent(xsrf.split('=')[1]) : null;
     }
 </script>
 {% endblock %}
