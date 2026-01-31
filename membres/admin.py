@@ -3,163 +3,93 @@ from .models import *
 from django.utils.html import format_html
 
 # ============================================
-# ADMIN MEMBRES
+# 1. MEMBRES
 # ============================================
 @admin.register(Membres)
 class MembresAdmin(admin.ModelAdmin):
-    list_display = ('prenom', 'nom', 'email', 'login', 'points', 'uuid_code')
-    list_filter = ('date_inscription', 'filliere')
-    search_fields = ('nom', 'prenom', 'email', 'login')
-    readonly_fields = ('uuid_code', 'date_inscription')
-    fieldsets = (
-        ('Informations personnelles', {
-            'fields': ('prenom', 'nom', 'email', 'telephone', 'photo')
-        }),
-        ('Scolaire', {
-            'fields': ('code_MASSAR', 'filliere')
-        }),
-        ('Authentification', {
-            'fields': ('login', 'mot_de_passe')
-        }),
-        ('Système', {
-            'fields': ('points', 'rang', 'uuid_code', 'date_inscription')
-        }),
-    )
-
+    list_display = ('prenom', 'nom', 'email', 'points')
+    search_fields = ('nom', 'prenom', 'email')
 
 # ============================================
-# ADMIN ÉQUIPE
-# ============================================
-@admin.register(TeamMember)
-class TeamMemberAdmin(admin.ModelAdmin):
-    list_display = ('prenom', 'nom', 'poste', 'actif', 'ordre')
-    list_editable = ('actif', 'ordre')
-    list_filter = ('actif', 'date_creation')
-    search_fields = ('nom', 'prenom', 'poste')
-    fieldsets = (
-        ('Informations personnelles', {
-            'fields': ('prenom', 'nom', 'poste', 'bio')
-        }),
-        ('Photo et réseaux sociaux', {
-            'fields': ('photo', 'instagram', 'linkedin', 'github', 'email')
-        }),
-        ('Affichage', {
-            'fields': ('ordre', 'actif')
-        }),
-    )
-
-
-# ============================================
-# ADMIN ÉVÉNEMENT
+# 2. ÉVÉNEMENTS
 # ============================================
 @admin.register(Evenement)
 class EvenementAdmin(admin.ModelAdmin):
-    list_display = ('titre', 'date_debut', 'nombre_jours', 'lieu', 'points_par_jour', 'nombre_participants', 'actif')
+    list_display = ('titre', 'date_debut', 'nombre_jours', 'has_template', 'actif')
     list_filter = ('actif', 'date_debut')
-    list_editable = ('actif',)
-    search_fields = ('titre', 'lieu')
+    readonly_fields = ('liste_des_presents',)
     
-    # On garde le champ 'participants' dans readonly pour qu'il ne soit pas modifiable
-    readonly_fields = ('liste_des_presents',) 
-
-    # On retire 'participants' d'ici pour ne plus voir les boîtes de sélection
-    # filter_horizontal = ('participants',)  <-- On supprime ou commente cette ligne
-
     fieldsets = (
-        ('Informations de base', {
-            'fields': ('titre', 'description', 'lieu')
-        }),
-        ('Durée et points', {
-            'fields': ('date_debut', 'nombre_jours', 'points_par_jour')
-        }),
-        ('Participants (Lecture Seule)', {
-            # On affiche notre fonction personnalisée au lieu du champ standard
-            'fields': ('liste_des_presents',) 
-        }),
-        ('Statut', {
-            'fields': ('actif',)
-        }),
+        ('Infos Générales', {'fields': ('titre', 'description', 'lieu', 'actif')}),
+        ('Dates & Points', {'fields': ('date_debut', 'nombre_jours', 'points_par_jour')}),
+        ('Participants', {'fields': ('liste_des_presents',)}),
     )
 
-    fieldsets = (
-        ('Informations Générales', {
-            'fields': ('titre', 'description', 'lieu', 'actif')
-        }),
-        ('Dates & Points', {
-            'fields': ('date_debut', 'nombre_jours', 'points_par_jour')
-        }),
-        ('Personnalisation du Certificat', {
-            'description': "Configurez l'apparence du PDF pour cet événement.",
-            'fields': ('image_certificat', 'cert_nom_x', 'cert_nom_y', 'cert_text_color')
-        }),
-        ('Participants', {
-            'fields': ('participants',) # Si tu utilises ManyToMany
-        }),
-    )
-
-    def nombre_participants(self, obj):
-        return obj.participants.count()
-    nombre_participants.short_description = "Nb Participants"
-
-    # --- NOUVELLE FONCTION POUR LISTER LES NOMS ---
     def liste_des_presents(self, obj):
         presents = obj.participants.all()
-        
-        if not presents:
-            return "Aucun participant pour le moment."
-            
-        # On crée une liste HTML simple
-        html_content = "<ul style='margin-left: 0; padding-left: 15px;'>"
+        if not presents: return "Aucun participant."
+        html = "<ul style='margin-left:0;padding-left:15px;'>"
         for p in presents:
-            html_content += f"<li style='margin-bottom: 5px;'>👤 <strong>{p.prenom} {p.nom}</strong> ({p.filliere})</li>"
-        html_content += "</ul>"
-        
-        return format_html(html_content)
+            html += f"<li>👤 {p.prenom} {p.nom}</li>"
+        return format_html(html + "</ul>")
     
-    liste_des_presents.short_description = "Liste des Membres Scannés"
-
-
-# ============================================
-# ADMIN PRÉSENCE
-# ============================================
-@admin.register(Presence)
-class PresenceAdmin(admin.ModelAdmin):
-    list_display = ('membre', 'evenement', 'jour', 'status', 'date_scan')
-    list_filter = ('status', 'evenement', 'jour')
-    search_fields = ('membre__nom', 'membre__prenom', 'evenement__titre')
-    readonly_fields = ('date_scan',)
-
+    def has_template(self, obj):
+        return hasattr(obj, 'template_certificat')
+    has_template.boolean = True
+    has_template.short_description = "Template Configuré ?"
 
 # ============================================
-# ADMIN CERTIFICAT
+# 3. CONFIGURATION CERTIFICATS (Template)
 # ============================================
-# admin.py
-
-@admin.register(Certificate)
-class CertificateAdmin(admin.ModelAdmin):
-    list_display = ('titre', 'membre', 'evenement', 'date_obtention')
-    list_filter = ('evenement', 'date_obtention')
-    search_fields = ('membre__nom', 'membre__prenom', 'titre')
-    readonly_fields = ('date_obtention',)
+@admin.register(CertificateTemplate)
+class CertificateTemplateAdmin(admin.ModelAdmin):
+    list_display = ('evenement', 'preview_image', 'taille_police')
+    search_fields = ('evenement__titre',)
     
     fieldsets = (
-        ('Informations', {
-            'fields': ('titre', 'membre', 'evenement', 'jours_assistes', 'date_obtention')
+        ('Liaison Événement', {
+            'fields': ('evenement',)
         }),
-        ('Personnalisation du PDF', {
-            'description': "Design du texte (Position, Couleur et Police).",
-            # ✅ On ajoute 'police_ttf' ici
-            'fields': ('cert_nom_x', 'cert_nom_y', 'cert_text_color', 'police_ttf')
+        ('Visuel', {
+            'fields': ('image_fond', 'police_ttf', 'text_color', 'taille_police')
+        }),
+        ('Position Nom', {
+            'fields': ('nom_x', 'nom_y')
+        }),
+        ('Signature (Optionnel)', {
+            'fields': ('signature', 'sign_x', 'sign_y')
         }),
     )
 
+    def preview_image(self, obj):
+        if obj.image_fond:
+            return format_html('<img src="{}" style="width: 100px; height: auto;" />', obj.image_fond.url)
+        return "-"
+    preview_image.short_description = "Aperçu"
 
 # ============================================
-# ADMIN ANNONCE
+# 4. CERTIFICATS DÉLIVRÉS (Preuves)
 # ============================================
-@admin.register(Annonce)
-class AnnonceAdmin(admin.ModelAdmin):
-    list_display = ('titre', 'auteur', 'date_creation')
-    list_filter = ('date_creation',)
-    search_fields = ('titre', 'contenu')
-    readonly_fields = ('date_creation', 'date_modification')
+@admin.register(Certificate)
+class CertificateAdmin(admin.ModelAdmin):
+    list_display = ('membre', 'evenement', 'date_obtention')
+    list_filter = ('evenement', 'date_obtention')
+    search_fields = ('membre__nom', 'titre')
+    readonly_fields = ('date_obtention', 'code_verification')
+    
+    fieldsets = (
+        ('Détails', {
+            'fields': ('titre', 'membre', 'evenement', 'date_obtention')
+        }),
+    )
+    
+    def has_add_permission(self, request):
+        return False
+
+# ============================================
+# 5. AUTRES
+# ============================================
+@admin.register(TeamMember)
+class TeamMemberAdmin(admin.ModelAdmin):
+    list_display = ('prenom', 'poste', 'actif', 'ordre')
+    list_editable = ('ordre', 'actif')

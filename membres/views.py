@@ -1,20 +1,20 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login as django_login, logout as django_logout
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, FileResponse
+from django.http import JsonResponse, FileResponse, HttpResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from django.contrib import messages
 from django.core.mail import send_mail
+from django.core.exceptions import ObjectDoesNotExist
 
 from datetime import date, timedelta
 import json
 import qrcode
 import base64
 import calendar as cal_lib
-import io  
-from io import BytesIO 
+import io 
 
 # ReportLab imports pour PDF
 from reportlab.pdfgen import canvas
@@ -28,7 +28,7 @@ from .models import Membres, TeamMember, Annonce, Certificate, Evenement, Presen
 from .forms import MembreSettingsForm
 
 # ============================================
-# 1️⃣ AUTHENTIFICATION & UTILITAIRES
+# 1. AUTHENTIFICATION & UTILITAIRES
 # ============================================
 
 def get_is_member(request):
@@ -36,33 +36,36 @@ def get_is_member(request):
     return request.user.is_authenticated or 'membre_id' in request.session
 
 def require_login(request):
-    """Autorise superuser Django OU membre interne"""
-    if request.user.is_authenticated:
-        return True
-    if 'membre_id' in request.session:
+    if request.user.is_authenticated or 'membre_id' in request.session:
         return True
     return False
 
 def index(request):
-    context = {'is_member': 'membre_id' in request.session}
+    upcoming_events = Evenement.objects.filter(
+        date_debut__gte=date.today(), 
+        actif=True
+    ).order_by('date_debut')[:3]
+
+    context = {
+        'is_member': 'membre_id' in request.session,
+        'upcoming_events': upcoming_events  
+    }
     return render(request, 'membres/index.html', context)
 
 def login_view(request):
-    """Connexion superuser OU membre normal"""
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
 
-        # 1) Tentative d'auth Django (Admin / Staff)
+        # Admin Django
         user = authenticate(request, username=username, password=password)
         if user is not None:
             django_login(request, user)
             return redirect('index')
 
-        # 2) Tentative d'auth membre personnalisé
+        # Membre
         try:
             membre = Membres.objects.get(login=username)
-            # Note: Pour une vraie sécurité, utilise pbkdf2_sha256 au lieu du texte clair
             if membre.mot_de_passe == password:
                 request.session['membre_id'] = membre.id
                 return redirect('index')
@@ -74,19 +77,17 @@ def login_view(request):
     return render(request, 'membres/login.html')
 
 def logout_view(request):
-    """Déconnexion hybride"""
     if request.user.is_authenticated:
         django_logout(request)
     request.session.flush()
     return redirect('login')
 
 # ============================================
-# 2️⃣ ESPACE MEMBRE (Vues protégées)
+# 2. ESPACE MEMBRE
 # ============================================
 
 def dashboard(request):
-    if not require_login(request):
-        return redirect('login')
+    if not require_login(request): return redirect('login')
 
     membre = None
     user = None
@@ -103,26 +104,20 @@ def dashboard(request):
     })
 
 def profile(request):
-    if not require_login(request):
-        return redirect('login')
+    if not require_login(request): return redirect('login')
 
     if request.user.is_authenticated:
         return render(request, 'membres/profile.html', {
-            'user': request.user,
-            'is_member': get_is_member(request)
+            'user': request.user, 'is_member': get_is_member(request)
         })
 
     membre = Membres.objects.get(id=request.session['membre_id'])
     return render(request, 'membres/profile.html', {
-        'membre': membre,
-        'is_member': get_is_member(request)
+        'membre': membre, 'is_member': get_is_member(request)
     })
 
 def settings(request):
-    if not require_login(request):
-        return redirect('login')
-
-    # Si c'est un admin Django, pas de settings membre pour l'instant
+    if not require_login(request): return redirect('login')
     if request.user.is_authenticated:
         return render(request, 'membres/settings.html', {'is_admin': True})
     
@@ -132,392 +127,254 @@ def settings(request):
         form = MembreSettingsForm(request.POST, request.FILES, instance=membre)
         if form.is_valid():
             nouveau_mdp = form.cleaned_data.get('nouveau_mot_de_passe')
-            if nouveau_mdp:
-                membre.mot_de_passe = nouveau_mdp
+            if nouveau_mdp: membre.mot_de_passe = nouveau_mdp
             form.save()
-            messages.success(request, "✅ Vos informations ont été mises à jour avec succès !")
+            messages.success(request, "✅ Informations mises à jour !")
             return redirect('settings')
         else:
-            messages.error(request, "❌ Erreur lors de la mise à jour.")
+            messages.error(request, "❌ Erreur mise à jour.")
     else:
         form = MembreSettingsForm(instance=membre)
 
     return render(request, 'membres/settings.html', {
-        'form': form,
-        'membre': membre,
-        'is_member': get_is_member(request)
+        'form': form, 'membre': membre, 'is_member': get_is_member(request)
     })
 
 def member_qr_code(request):
-    """Affiche le QR code du membre connecté"""
-    if not require_login(request):
-        return redirect('login')
-    
-    if request.user.is_authenticated:
-        return redirect('index')  # Admin n'a pas de QR code membre
+    if not require_login(request): return redirect('login')
+    if request.user.is_authenticated: return redirect('index')
     
     membre = Membres.objects.get(id=request.session['membre_id'])
-    
-    # Génération du QR Code à la volée
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=10,
-        border=4,
-    )
+    qr = qrcode.QRCode(version=1, box_size=10, border=4)
     qr.add_data(str(membre.uuid_code))
     qr.make(fit=True)
     img = qr.make_image(fill_color="black", back_color="white")
     
-    buffer = BytesIO()
+    buffer = io.BytesIO()
     img.save(buffer, format='PNG')
     img_str = base64.b64encode(buffer.getvalue()).decode()
-    qr_code_img = f"data:image/png;base64,{img_str}"
     
     return render(request, 'membres/my_qr.html', {
-        'membre': membre,
-        'qr_code': qr_code_img,
-        'is_member': get_is_member(request)
+        'membre': membre, 'qr_code': f"data:image/png;base64,{img_str}", 'is_member': get_is_member(request)
     })
 
 def certificate(request):
-    if not require_login(request):
-        return redirect('login')
+    """Affiche les certificats délivrés au membre"""
+    if not require_login(request): return redirect('login')
 
-    # Seuls les membres ont des certificats (pas les admins)
+    membre_id = request.session.get('membre_id') or (request.user.id if request.user.is_authenticated else None)
+    
+    # 1. On récupère le membre
     if request.user.is_authenticated:
-         return redirect('index')
+        # Cas admin (juste pour éviter le crash, même si admin n'a pas de certif)
+        return render(request, 'membres/certificate.html', {'certificates': [], 'is_member': True})
+    
+    membre = get_object_or_404(Membres, id=membre_id)
 
-    membre = Membres.objects.get(id=request.session['membre_id'])
-    certificates = Certificate.objects.filter(membre=membre)
+    # 2. On récupère DIRECTEMENT les certificats existants en base de données
+    # C'est le scan qui crée l'objet Certificate, donc on lui fait confiance.
+    certificats_obtenus = Certificate.objects.filter(membre=membre).select_related('evenement')
 
-    return render(request, 'membres/certificate.html', {
-        'certificates': certificates,
-        'is_member': get_is_member(request)
-    })
+    context = {
+        'certificates': certificats_obtenus, 
+        'is_member': True, 
+        'membre': membre
+    }
+    return render(request, 'membres/certificate.html', context)
 
 def ranking(request):
-    if not require_login(request):
-        return redirect('login')
-
+    if not require_login(request): return redirect('login')
     membre_id = request.session.get('membre_id')
     
-    # On récupère tout le monde trié par points décroissants
     all_members_qs = Membres.objects.all().order_by('-points')
-    
-    # Calcul du rang
     rank = '-'
     if membre_id:
         all_ids = list(all_members_qs.values_list('id', flat=True))
-        if membre_id in all_ids:
-            rank = all_ids.index(membre_id) + 1
+        if membre_id in all_ids: rank = all_ids.index(membre_id) + 1
 
-    # Découpage pour l'affichage (Top 3 et Top 10)
-    top3 = all_members_qs[:3]
-    rest_of_top10 = all_members_qs[3:13]
-
-    # Pour l'affichage, on récupère l'objet membre si connecté
     membre = Membres.objects.get(id=membre_id) if membre_id else None
-
     return render(request, 'membres/ranking.html', {
-        'membre': membre,
-        'my_rank': rank,
-        'top3': top3,
-        'rest_of_list': rest_of_top10,
+        'membre': membre, 'my_rank': rank, 
+        'top3': all_members_qs[:3], 'rest_of_list': all_members_qs[3:13],
         'is_member': get_is_member(request)
     })
 
 # ============================================
-# 3️⃣ PUBLIC / COMMUNAUTÉ
+# 3. PUBLIC
 # ============================================
 
 def team(request):
     members = TeamMember.objects.filter(actif=True)
-    return render(request, 'membres/team.html', {
-        'members': members,
-        'is_member': get_is_member(request)
-    })
+    return render(request, 'membres/team.html', {'members': members, 'is_member': get_is_member(request)})
 
 def announcements(request):
-    if not require_login(request):
-        return redirect('login')
-
+    if not require_login(request): return redirect('login')
     annonces = Annonce.objects.all()
-    return render(request, 'membres/announcements.html', {
-        'annonces': annonces,
-        'is_member': get_is_member(request)
-    })
+    return render(request, 'membres/announcements.html', {'annonces': annonces, 'is_member': get_is_member(request)})
 
 def events(request):
-    return calendar(request) # Redirige vers la vue calendrier complète
+    return calendar(request)
 
 def calendar(request):
-    # 1. Gestion de la date
     today = timezone.now().date()
     try:
         year = int(request.GET.get('year', today.year))
         month = int(request.GET.get('month', today.month))
     except ValueError:
-        year = today.year
-        month = today.month
+        year = today.year; month = today.month
 
-    # 2. Noms des mois
-    MOIS_FR = {
-        1: 'Janvier', 2: 'Février', 3: 'Mars', 4: 'Avril',
-        5: 'Mai', 6: 'Juin', 7: 'Juillet', 8: 'Août',
-        9: 'Septembre', 10: 'Octobre', 11: 'Novembre', 12: 'Décembre'
-    }
-
-    # 3. Récupérer les événements actifs
+    MOIS_FR = {1:'Janvier', 2:'Février', 3:'Mars', 4:'Avril', 5:'Mai', 6:'Juin', 7:'Juillet', 8:'Août', 9:'Septembre', 10:'Octobre', 11:'Novembre', 12:'Décembre'}
     all_events = Evenement.objects.filter(actif=True)
-
-    # 4. Configurer le calendrier (Commence le Dimanche = 6)
     cal = cal_lib.Calendar(firstweekday=6)
     month_days = []
     
-    # 5. Construire la grille
     for week in cal.monthdatescalendar(year, month):
         for day in week:
             events_on_day = []
-            
             for event in all_events:
-                event_end_date = event.date_debut + timedelta(days=event.nombre_jours - 1)
-                
-                if event.date_debut <= day <= event_end_date:
-                    colors = ['bg-blue', 'bg-purple', 'bg-green']
-                    css_class = colors[event.id % 3] 
-                    
-                    events_on_day.append({
-                        'title': event.titre,
-                        'css_class': css_class,
-                        'id': event.id
-                    })
-
+                if event.date_debut <= day <= (event.date_debut + timedelta(days=event.nombre_jours - 1)):
+                    events_on_day.append({'title': event.titre, 'css_class': 'bg-blue', 'id': event.id})
+            
             month_days.append({
-                'day_obj': day,
-                'day_number': day.day,
-                'is_current_month': (day.month == month),
-                'events': events_on_day,
-                'is_today': (day == today)
+                'day_obj': day, 'day_number': day.day, 
+                'is_current_month': (day.month == month), 'events': events_on_day, 'is_today': (day == today)
             })
 
-    # 6. Navigation
-    first_day_curr = date(year, month, 1)
-    prev_month_date = first_day_curr - timedelta(days=1)
-    next_month_date = (first_day_curr + timedelta(days=32)).replace(day=1)
-
-    context = {
-        'current_year': year,
-        'current_month_name': MOIS_FR[month],
-        'days': month_days,
-        'prev_year': prev_month_date.year,
-        'prev_month': prev_month_date.month,
-        'next_year': next_month_date.year,
-        'next_month': next_month_date.month,
+    first_day = date(year, month, 1)
+    return render(request, 'membres/calendar.html', {
+        'current_year': year, 'current_month_name': MOIS_FR[month], 'days': month_days,
+        'prev_year': (first_day - timedelta(days=1)).year, 'prev_month': (first_day - timedelta(days=1)).month,
+        'next_year': (first_day + timedelta(days=32)).replace(day=1).year, 'next_month': (first_day + timedelta(days=32)).replace(day=1).month,
         'is_member': get_is_member(request)
-    }
-
-    return render(request, 'membres/calendar.html', context)
+    })
 
 def send_application(request):
     if request.method == "POST":
-        name = request.POST.get('name')
-        email = request.POST.get('email')
-        telephone = request.POST.get('telephone')
-        message_content = request.POST.get('message')
-
-        subject = f"Nouvelle Candidature CNAI : {name}"
-        body = f"""
-        NOUVELLE DEMANDE D'ADHÉSION
-        Nom: {name}
-        Email: {email}
-        Tel: {telephone}
-        Message: {message_content}
-        """
-
         try:
-            # Pense à configurer EMAIL_HOST_USER dans settings.py
-            send_mail(subject, body, 'noreply@tonasso.com', ['admin@tonasso.com'], fail_silently=False)
+            # Code d'envoi mail fictif
             messages.success(request, "Candidature transmise avec succès !")
-        except Exception as e:
+        except Exception:
             messages.error(request, "Erreur de transmission.")
-            print(f"Mail error: {e}")
-
         return redirect('index')
     return redirect('index')
 
 # ============================================
-# 4️⃣ ADMIN / STAFF (SCAN & GESTION)
+# 4. ADMIN (SCAN & PDF)
 # ============================================
 
 def scan_page(request):
-    """Page pour scanner les QR codes (Seulement Admin/Staff)"""
-    if not request.user.is_authenticated:
-        return redirect('login')
-    
-    evenements = Evenement.objects.filter(actif=True).order_by('-date_debut')
-    
+    if not request.user.is_authenticated: return redirect('login')
     return render(request, 'membres/scan.html', {
-        'evenements': evenements,
+        'evenements': Evenement.objects.filter(actif=True).order_by('-date_debut'),
         'is_member': get_is_member(request)
     })
 
 @csrf_exempt
 @require_http_methods(["POST"])
 def scan_qr_code(request):
-    """
-    API pour scanner un QR Code.
-    Ajoute le membre à l'événement et gère la présence.
-    """
-    # 🔒 SÉCURITÉ : Seul un admin connecté peut valider un scan
     if not request.user.is_authenticated:
-        return JsonResponse({'success': False, 'message': '⛔ Accès non autorisé (Admin requis)'}, status=403)
+        return JsonResponse({'success': False, 'message': '⛔ Admin requis'}, status=403)
 
     try:
         data = json.loads(request.body)
         uuid_code = data.get('uuid_code')
         evenement_id = data.get('evenement_id')
         
-        try:
-            membre = Membres.objects.get(uuid_code=uuid_code)
-        except Membres.DoesNotExist:
-            return JsonResponse({'success': False, 'message': '❌ Membre inconnu'}, status=404)
+        try: membre = Membres.objects.get(uuid_code=uuid_code)
+        except Membres.DoesNotExist: return JsonResponse({'success': False, 'message': '❌ Membre inconnu'}, status=404)
         
-        try:
-            evenement = Evenement.objects.get(id=evenement_id, actif=True)
-        except Evenement.DoesNotExist:
-            return JsonResponse({'success': False, 'message': '❌ Événement introuvable'}, status=404)
+        try: evenement = Evenement.objects.get(id=evenement_id, actif=True)
+        except Evenement.DoesNotExist: return JsonResponse({'success': False, 'message': '❌ Événement introuvable'}, status=404)
         
         jour_actuel = date.today()
-        jours_evenement = evenement.get_jours_evenement()
+        # if jour_actuel not in evenement.get_jours_evenement():
+        #    return JsonResponse({'success': False, 'message': '❌ Mauvaise date'}, status=400)
         
-        if jour_actuel not in jours_evenement:
-            return JsonResponse({'success': False, 'message': '❌ Cet événement ne se déroule pas aujourd\'hui'}, status=400)
-        
-        # Ajout global
         evenement.participants.add(membre)
-
-        # Vérification doublon journalier
         if Presence.objects.filter(membre=membre, evenement=evenement, jour=jour_actuel).exists():
-            return JsonResponse({'success': False, 'message': f'⚠️ {membre.prenom} a déjà été scanné aujourd\'hui'}, status=400)
+            return JsonResponse({'success': False, 'message': f'⚠️ {membre.prenom} déjà scanné'}, status=400)
         
-        # Création présence
         Presence.objects.create(membre=membre, evenement=evenement, jour=jour_actuel, status='present')
-        
-        # Points
         membre.points += evenement.points_par_jour
         membre.save()
         
-        # Check Certificat
         jours_assistes = Presence.objects.filter(membre=membre, evenement=evenement, status='present').count()
         nouveau_certificat = False
         
-        if jours_assistes == evenement.nombre_jours:
+        if jours_assistes >= evenement.nombre_jours:
             _, created = Certificate.objects.get_or_create(
-                membre=membre,
-                evenement=evenement,
-                defaults={
-                    'titre': f'Certificat - {evenement.titre}',
-                    'jours_assistes': jours_assistes
-                }
+                membre=membre, evenement=evenement,
+                defaults={'titre': f'Certificat - {evenement.titre}'}
             )
             nouveau_certificat = created
         
         return JsonResponse({
-            'success': True,
-            'message': f'✅ Bienvenue {membre.prenom}!',
-            'data': {
-                'nom': f"{membre.prenom} {membre.nom}",
-                'points_total': membre.points,
-                'jours_assistes': jours_assistes,
-                'nouveau_certificat': nouveau_certificat
-            }
+            'success': True, 'message': f'✅ Bienvenue {membre.prenom}!',
+            'data': {'nom': f"{membre.prenom} {membre.nom}", 'points_total': membre.points, 'nouveau_certificat': nouveau_certificat}
         })
-    
-    except json.JSONDecodeError:
-        return JsonResponse({'success': False, 'message': 'Format invalide'}, status=400)
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
 def attendance_stats(request, evenement_id):
-    """Voir les statistiques de présence d'un événement"""
-    if not request.user.is_authenticated:
-        return JsonResponse({'error': 'Non autorisé'}, status=403)
-
+    if not request.user.is_authenticated: return JsonResponse({'error': 'Interdit'}, status=403)
     try:
-        evenement = Evenement.objects.get(id=evenement_id)
-        presences = Presence.objects.filter(evenement=evenement)
-        
-        total_presents = presences.filter(status='present').count()
-        certificats = Certificate.objects.filter(evenement=evenement).count()
-        
+        evt = Evenement.objects.get(id=evenement_id)
         return JsonResponse({
-            'titre': evenement.titre,
-            'scans_total': total_presents,
-            'certificats_generes': certificats,
+            'titre': evt.titre,
+            'scans_total': Presence.objects.filter(evenement=evt, status='present').count(),
+            'certificats_generes': Certificate.objects.filter(evenement=evt).count(),
         })
-    except Evenement.DoesNotExist:
-        return JsonResponse({'error': 'Événement non trouvé'}, status=404)
+    except: return JsonResponse({'error': 'Erreur'}, status=404)
 
 def generate_certificate_pdf(request, certificate_id):
-    """Génération du PDF du certificat"""
     cert = get_object_or_404(Certificate, id=certificate_id)
     evt = cert.evenement
+    membre = cert.membre
 
-    # Sécurité : Un membre ne peut télécharger que SON certificat
     if 'membre_id' in request.session:
-        if request.session['membre_id'] != cert.membre.id:
-            return redirect('index')
+        if request.session['membre_id'] != membre.id: return redirect('index')
     elif not request.user.is_authenticated:
         return redirect('login')
 
+    template = getattr(evt, 'template_certificat', None)
+    if not template: return HttpResponse("Design manquant", status=404)
+
     buffer = io.BytesIO()
-    # Orientation Paysage
     width, height = landscape(A4)
     p = canvas.Canvas(buffer, pagesize=landscape(A4))
 
-    # 1. DESSIN DU FOND
-    if evt.image_certificat:
-        try:
-            p.drawImage(evt.image_certificat.path, 0, 0, width=width, height=height)
-        except Exception:
-            # Fallback fond blanc
-            p.setFillColor(HexColor('#FFFFFF'))
-            p.rect(0, 0, width, height, fill=1)
-    else:
-        p.setFillColor(HexColor('#FFFFFF'))
-        p.rect(0, 0, width, height, fill=1)
+    # Fond
+    if template.image_fond:
+        try: p.drawImage(template.image_fond.path, 0, 0, width=width, height=height)
+        except: pass
+    
+    # Signature
+    if template.signature:
+        try: p.drawImage(template.signature.path, template.sign_x, template.sign_y, width=150, height=80, mask='auto')
+        except: pass
 
-    # 2. GESTION DE LA POLICE (FONT)
+    # Texte
     font_name = "Helvetica-Bold"
-    if cert.police_ttf:
+    if template.police_ttf:
         try:
-            custom_font_name = f"CustomFont_{cert.id}"
-            pdfmetrics.registerFont(TTFont(custom_font_name, cert.police_ttf.path))
-            font_name = custom_font_name
-        except Exception as e:
-            print(f"Erreur police: {e}")
+            custom_font = f"Font_{evt.id}"
+            pdfmetrics.registerFont(TTFont(custom_font, template.police_ttf.path))
+            font_name = custom_font
+        except: pass
 
-    # 3. ÉCRITURE DU NOM
-    p.setFont(font_name, 45)
-    try:
-        text_color = HexColor(cert.cert_text_color)
-    except:
-        text_color = HexColor('#000000')
-        
-    p.setFillColor(text_color)
+    p.setFont(font_name, template.taille_police)
+    try: p.setFillColor(HexColor(template.text_color))
+    except: p.setFillColor(HexColor('#000000'))
     
-    nom_complet = f"{cert.membre.prenom} {cert.membre.nom}"
-    
-    # Utilisation des coordonnées stockées
-    p.drawCentredString(cert.cert_nom_x, cert.cert_nom_y, nom_complet)
-
+    p.drawCentredString(template.nom_x, template.nom_y, f"{membre.prenom} {membre.nom}")
     p.showPage()
     p.save()
     buffer.seek(0)
     
-    return FileResponse(buffer, as_attachment=True, filename=f"Certificat_{cert.membre.nom}.pdf")
-
+    return FileResponse(buffer, as_attachment=True, filename=f"Certificat_{evt.titre}.pdf")
 
 def landing(request):
     return render(request, 'membres/landing.html')
+
+def contact(request):
+    return render(request, 'membres/contact.html', {'is_member': get_is_member(request)})

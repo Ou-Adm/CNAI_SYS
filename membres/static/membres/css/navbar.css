@@ -110,7 +110,10 @@
     border: none;
     padding: 0.5rem 0.75rem;
     cursor: pointer;
-    display: none;
+    
+    /* MODIFIE : Caché par défaut sur grand écran */
+    display: none; 
+    
     flex-direction: column;
     gap: 4px;
     align-items: flex-end;
@@ -118,9 +121,9 @@
     transition: all 0.3s ease;
 }
 
-/* Affiche hamburger si connecté (classe body.user-logged-in côté template) */
-body.user-logged-in .hamburger-btn {
-    display: flex;
+/* AJOUTE : Cette classe force l'affichage sur Desktop si l'utilisateur est connecté */
+.hamburger-btn.visible-desktop {
+    display: flex !important;
 }
 
 .hamburger-btn:hover {
@@ -273,12 +276,12 @@ body.user-logged-in .hamburger-btn {
         height: 42px;
     }
     
-    /* Cache les liens Desktop */
+    /* Cache les liens Desktop et le bouton Sign In "Desktop" */
     .nav-links, .signin-btn {
         display: none;
     }
 
-    /* Force l'affichage du Hamburger sur Mobile */
+    /* CORRECTION : Affiche le bouton hamburger sur Mobile, que l'on soit connecté ou pas */
     .hamburger-btn {
         display: flex !important;
     }

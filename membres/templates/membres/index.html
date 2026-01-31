@@ -2,8 +2,6 @@
 {% load static %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'membres/css/hero.css' %}">
-<link rel="stylesheet" href="{% static 'membres/css/navbar.css' %}">
 
 <div class="video-hero-container">
     <video autoplay muted loop playsinline class="hero-video">
@@ -14,21 +12,21 @@
     <div class="hero-overlay"></div>
 
     <div class="hero-content">
-        <div class="badge-container animate-fade-up" style="animation-delay: 0.1s;">
+        <div class="badge-container reveal delay-1">
             <span class="season-badge">Saison 2025 • CNAI ESTM</span>
         </div>
 
-        <h1 class="hero-title animate-fade-up" style="animation-delay: 0.3s;">
+        <h1 class="hero-title reveal delay-2">
             Forgeons L' <br>
             <span class="gradient-text">Intelligence de Demain</span>
         </h1>
         
-        <p class="hero-description animate-fade-up" style="animation-delay: 0.5s;">
+        <p class="hero-description reveal delay-3">
             Clever Nest AI est le pôle d'excellence étudiant pour l'IA et l'IoT.<br>
             Pas de théorie inutile. Que du code, des projets et de l'innovation.
         </p>
 
-        <div class="hero-buttons animate-fade-up" style="animation-delay: 0.7s;">
+        <div class="hero-buttons reveal delay-4">
             <a href="{% url 'events' %}" class="btn-main">
                 Découvrir le Club
             </a>
@@ -43,10 +41,10 @@
     <div class="geo-shape shape-1"></div>
     <div class="geo-shape shape-2"></div>
     
-    <div class="passion-content animate-fade-up">
-        <h3 class="passion-label">NOTRE MISSION ?</h3>
+    <div class="passion-content">
+        <h3 class="passion-label reveal-on-scroll">NOTRE MISSION ?</h3>
         
-        <h1 class="passion-heading">
+        <h1 class="passion-heading reveal-on-scroll">
             Coder  <span class="text-white"> l’intelligence </span><span class="text-white"></span><br>
             Donner<span class="text-white"> vie </span> aux idées<br>
             Façonner le<span class="gradient-text"> futur</span> dès aujourd’hui
@@ -57,53 +55,52 @@
 <section class="manifesto-section">
     <img src="{% static 'membres/images/club_meeting.png' %}" alt="Étudiants construisant l'avenir" class="manifesto-background-img">
     
-    <div class="manifesto-content animate-fade-up">
-        
-        <h2 class="manifesto-title">L'avenir se code ligne par ligne.</h2>
-
-        <p class="manifesto-quote">
+    <div class="manifesto-content">
+        <h2 class="manifesto-title reveal-on-scroll">L'avenir se code ligne par ligne.</h2>
+        <p class="manifesto-quote reveal-on-scroll">
             "Nous sommes le pont entre la théorie que l'on nous enseigne et la technologie que nous allons déployer."
         </p>
-        
-        <a href="{% url 'events' %}" class="btn-glass">Voir nos Prochaines Missions</a>
+        <div class="reveal-on-scroll">
+            <a href="{% url 'events' %}" class="btn-glass">Voir nos Prochaines Missions</a>
+        </div>
     </div>
 </section>
 
 <section class="presentation-section" style="margin-bottom: 0">
     <div class="presentation-container">
         
-        <div class="presentation-header animate-fade-up">
-            <h2 class="presentation-title">
+        <div class="presentation-header">
+            <h2 class="presentation-title reveal-on-scroll">
                 De la curiosité  <br>
                 à la maîtrise de l’IA
             </h2>
-            <p class="presentation-stats">
-                Chaque année, le CNAI accompagne une nouvelle génération à créer, coder et innover au sein de l’ecole.
+            <p class="presentation-stats reveal-on-scroll">
+                Chaque année, le CNAI accompagne une nouvelle génération à créer, coder et innover au sein de l’école.
             </p>
         </div>
 
         <div class="cards-grid">
-            <div class="feature-card animate-fade-up" style="animation-delay: 0.2s;">
+            <div class="feature-card reveal-on-scroll">
                 <div class="card-image-wrapper">
                     <img src="{% static 'membres/images/club_meeting.png' %}" alt="Réunion du club" class="card-image">
                 </div>
                 <div class="card-content">
                     <h3>Une Communauté Soudée</h3>
-                    <p>CNAI n'est pas juste un club, c'est une famille. Échangez, collaborez et grandissez avec des étudiants passionnés par la tech et l'innovation.</p>
+                    <p>CNAI n'est pas juste un club, c'est une famille. Échangez, collaborez et grandissez avec des étudiants passionnés.</p>
                 </div>
             </div>
 
-            <div class="feature-card animate-fade-up" style="animation-delay: 0.4s;">
+            <div class="feature-card reveal-on-scroll" style="transition-delay: 0.1s;">
                 <div class="card-image-wrapper">
                     <img src="{% static 'membres/images/meet.png' %}" alt="Workshop Python" class="card-image">
                 </div>
                 <div class="card-content">
                     <h3>Workshops Pratiques</h3>
-                    <p>Fini la théorie ennuyeuse. Apprenez Python, le Machine Learning et la Computer Vision à travers des ateliers concrets et interactifs.</p>
+                    <p>Fini la théorie ennuyeuse. Apprenez Python, le Machine Learning et la Computer Vision à travers des ateliers concrets.</p>
                 </div>
             </div>
 
-            <div class="feature-card animate-fade-up" style="animation-delay: 0.6s;">
+            <div class="feature-card reveal-on-scroll" style="transition-delay: 0.2s;">
                 <div class="card-image-wrapper">
                     <img src="{% static 'membres/images/ard.jpg' %}" alt="Projets IoT" class="card-image">
                 </div>
@@ -117,11 +114,85 @@
     </div>
 </section>
 
-<section style="background: #000; padding: 40px 20px 100px 20px; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 0;">
-    <h2 class="manifesto-title" style="text-align: center; margin-bottom: 40px;">DEVENEZ MEMBRES</h2>
+<section class="timeline-section">
+    <h2 class="manifesto-title reveal-on-scroll" style="text-align: center;">PROCHAINES OPÉRATIONS</h2>
     
-    <div class="terminal-container animate-fade-up">
+    <div class="timeline-container reveal-on-scroll">
         
+        {% for event in upcoming_events %}
+            <div class="timeline-item">
+                <div class="timeline-date">
+                    <span class="day">{{ event.date_debut|date:"d" }}</span>
+                    <span class="month">{{ event.date_debut|date:"M"|upper }}</span>
+                </div>
+                <div class="timeline-content">
+                    <h3>{{ event.titre }}</h3>
+                    <p>
+                        <i class="fa-solid fa-location-dot"></i> {{ event.lieu }} 
+                        • {{ event.nombre_jours }} jour{% if event.nombre_jours > 1 %}s{% endif %}
+                    </p>
+                    
+                    <span class="status-tag">Confirmé</span>
+                </div>
+            </div>
+        
+        {% empty %}
+            <div style="text-align: center; padding: 20px; background: rgba(255,255,255,0.02); border-radius: 8px;">
+                <p style="color: #888; font-style: italic;">Aucune opération planifiée pour le moment. Restez à l'écoute.</p>
+            </div>
+        {% endfor %}
+
+    </div>
+    
+    <div style="text-align: center; margin-top: 30px;" class="reveal-on-scroll">
+        <a href="{% url 'calendar' %}" class="btn-glass-small">Voir le calendrier complet</a>
+    </div>
+</section>
+
+<style>
+    .timeline-section { padding: 60px 20px; max-width: 800px; margin: 0 auto; }
+    
+    .timeline-item {
+        display: flex; gap: 20px; margin-bottom: 20px;
+        background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px;
+        border-left: 3px solid #a855f7; align-items: center;
+        transition: transform 0.3s ease, background 0.3s;
+    }
+    .timeline-item:hover {
+        transform: translateX(10px);
+        background: rgba(168, 85, 247, 0.05);
+    }
+
+    .timeline-date {
+        background: #1a1a20; padding: 10px; border-radius: 6px; text-align: center; min-width: 70px;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    .timeline-date .day { display: block; font-size: 1.5rem; font-weight: bold; color: white; }
+    .timeline-date .month { display: block; font-size: 0.8rem; color: #a855f7; text-transform: uppercase; font-weight: bold; }
+    
+    .timeline-content h3 { color: white; margin: 0 0 5px 0; font-size: 1.1rem; font-family: 'Orbitron', sans-serif; }
+    .timeline-content p { color: #888; margin: 0; font-size: 0.9rem; }
+    
+    .status-tag {
+        display: inline-block; font-size: 0.7rem; padding: 2px 8px; border-radius: 10px;
+        background: rgba(39, 201, 63, 0.2); color: #27c93f; margin-top: 8px; border: 1px solid rgba(39, 201, 63, 0.3);
+    }
+
+    .btn-glass-small {
+        display: inline-block; padding: 10px 25px; 
+        border: 1px solid rgba(255,255,255,0.2); border-radius: 30px;
+        color: #ccc; text-decoration: none; font-size: 0.9rem;
+        transition: all 0.3s;
+    }
+    .btn-glass-small:hover {
+        border-color: #a855f7; color: #a855f7; background: rgba(168, 85, 247, 0.1);
+    }
+</style>
+
+<section style="background: #000; padding: 40px 20px 100px 20px; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 0;">
+    <h2 class="manifesto-title reveal-on-scroll" style="text-align: center; margin-bottom: 40px;">DEVENEZ MEMBRE</h2>
+    
+    <div class="terminal-container reveal-on-scroll">
         <div class="clean-terminal">
             <div class="terminal-header">
                 <div class="window-controls">
@@ -144,7 +215,7 @@
                 </div>
 
                 <div class="terminal-message">
-                    REMPLISSEZ LE FORMULAIRE POUR LE REJOINDRE L'AVENTURE.
+                    REMPLISSEZ LE FORMULAIRE POUR REJOINDRE L'AVENTURE.
                 </div>
 
                 <div style="margin-top: 25px;">
@@ -155,7 +226,6 @@
                 </div>
             </div>
         </div>
-
     </div>
 </section>
 
@@ -163,43 +233,35 @@
 
 <div id="joinModal" class="modal-overlay">
     <div class="modal-window clean-terminal">
-        
         <div class="terminal-header">
             <div class="window-controls">
                 <div class="control close" onclick="closeModal()"></div>
             </div>
             <span class="terminal-title">send_application.exe</span>
         </div>
-
         <div class="terminal-body" style="text-align: left;">
             <div class="terminal-message" style="margin-top: 0; margin-bottom: 20px; font-size: 1rem;">
                 > Initializing secure connection...<br>
                 > Please enter your credentials:
             </div>
-
             <form method="POST" action="{% url 'send_application' %}">
                 {% csrf_token %}
-                
                 <div class="form-group">
                     <label class="cmd-txt">NOM:</label>
                     <input type="text" name="name" class="terminal-input" placeholder="Votre Nom complet" required>
                 </div>
-
                 <div class="form-group">
                     <label class="cmd-txt">EMAIL:</label>
                     <input type="email" name="email" class="terminal-input" placeholder="votre@email.com" required>
                 </div>
-
                 <div class="form-group">
                     <label class="cmd-txt">PHONE:</label>
                     <input type="tel" name="telephone" class="terminal-input" placeholder="+212 6..." required>
                 </div>
-
                 <div class="form-group">
                     <label class="cmd-txt">MESSAGE:</label>
                     <textarea name="message" class="terminal-input" rows="3" placeholder="Pourquoi voulez-vous rejoindre le CNAI ?" required></textarea>
                 </div>
-
                 <button type="submit" class="clean-btn" style="width: 100%; margin-top: 10px;">
                     [ ENVOYER ]
                 </button>
@@ -209,162 +271,97 @@
 </div>
 
 <style>
-    /* --- Styles du Terminal Principal --- */
-    .terminal-container {
-        max-width: 1000px;
-        margin: 0 auto;
-        width: 100%;
+    /* --- 1. Animation de Défilement (Mantis Style) --- */
+    
+    /* État initial : Invisible + Décalé vers le bas */
+    .reveal, .reveal-on-scroll {
+        opacity: 0;
+        transform: translate3d(0, 60px, 0); 
+        /* Transition fluide "luxe" */
+        transition: opacity 0.8s cubic-bezier(0.215, 0.610, 0.355, 1.000), 
+                    transform 0.8s cubic-bezier(0.215, 0.610, 0.355, 1.000);
+        will-change: opacity, transform;
     }
 
+    /* État actif : Visible + À sa place */
+    .reveal.active, .reveal-on-scroll.active {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+
+    /* Délais pour le Hero au chargement */
+    .delay-1 { transition-delay: 0.1s; }
+    .delay-2 { transition-delay: 0.3s; }
+    .delay-3 { transition-delay: 0.5s; }
+    .delay-4 { transition-delay: 0.7s; }
+
+    /* --- Styles du Terminal et Modal --- */
+    .terminal-container { max-width: 1000px; margin: 0 auto; width: 100%; }
     .clean-terminal {
-        background: #0f0f12; /* Fond noir mat */
-        border-radius: 12px;
+        background: #0f0f12; border-radius: 12px;
         border: 1px solid rgba(255, 255, 255, 0.1);
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
-        overflow: hidden;
-        font-family: 'Courier New', monospace;
+        overflow: hidden; font-family: 'Courier New', monospace;
         transition: transform 0.3s ease;
     }
-
-    .clean-terminal:hover {
-        transform: translateY(-5px);
-        border-color: rgba(255, 255, 255, 0.2);
-    }
-
+    .clean-terminal:hover { transform: translateY(-5px); border-color: rgba(255, 255, 255, 0.2); }
+    
     .terminal-header {
-        background: #1a1a20;
-        padding: 12px 15px;
-        display: flex;
-        align-items: center;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        position: relative;
+        background: #1a1a20; padding: 12px 15px; display: flex; align-items: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05); position: relative;
     }
-
     .window-controls { display: flex; gap: 8px; }
     .control { width: 12px; height: 12px; border-radius: 50%; opacity: 0.8; }
     .close { background: #ff5f56; cursor: pointer; } 
     .minimize { background: #ffbd2e; } 
     .maximize { background: #27c93f; }
-
+    
     .terminal-title {
         position: absolute; left: 50%; transform: translateX(-50%);
         color: #555; font-size: 0.8rem; font-weight: 600; letter-spacing: 1px;
     }
-
-    .terminal-body {
-        padding: 30px;
-        color: #cbd5e0;
-        line-height: 1.6;
-    }
-
-    /* Couleurs Syntaxe */
+    .terminal-body { padding: 30px; color: #cbd5e0; line-height: 1.6; }
+    
     .prompt-arrow { color: #a855f7; font-weight: bold; }
     .prompt-path { color: #60a5fa; font-weight: bold; }
     .cmd-txt { color: #f1fa8c; font-weight: bold; }
     .status-ok { color: #27c93f; }
-
-    .terminal-message {
-        margin-top: 25px;
-        color: white;
-        font-size: 1.2rem;
-        font-weight: 700;
-    }
-
-    .typing-cursor {
-        color: #a855f7;
-        animation: blink 1s step-end infinite;
-    }
-
-    /* Bouton Clean */
-    .clean-btn {
-        background: transparent;
-        color: #a855f7;
-        text-decoration: none;
-        padding: 12px 25px;
-        border: 1px solid #a855f7;
-        border-radius: 4px;
-        font-weight: 700;
-        display: inline-block;
-        transition: all 0.3s ease;
-        font-size: 0.95rem;
-        letter-spacing: 1px;
-        cursor: pointer;
-    }
-
-    .clean-btn:hover {
-        background: rgba(168, 85, 247, 0.1);
-        color: white;
-        border-color: #d8b4fe;
-    }
-
-    /* --- Styles de la Modale (Pop-up) --- */
-    .modal-overlay {
-        display: none; /* Caché par défaut */
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0, 0, 0, 0.85);
-        backdrop-filter: blur(8px);
-        z-index: 9999;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-        padding: 20px; /* Marge de sécurité sur mobile */
-    }
-
-    .modal-overlay.active {
-        display: flex;
-        opacity: 1;
-    }
-
-    .modal-window {
-        width: 100%;
-        max-width: 500px;
-        
-        /* GESTION DU SCROLL SI L'ÉCRAN EST TROP PETIT */
-        max-height: 90vh; 
-        overflow-y: auto;
-        display: flex; flex-direction: column;
-        
-        transform: scale(0.95);
-        transition: transform 0.3s ease;
-        margin: 0 auto;
-        box-shadow: 0 25px 50px rgba(0,0,0,0.9);
-    }
-
-    .modal-overlay.active .modal-window {
-        transform: scale(1);
-    }
-
-    /* Scrollbar custom pour le modal */
-    .modal-window::-webkit-scrollbar { width: 6px; }
-    .modal-window::-webkit-scrollbar-track { background: #0f0f12; }
-    .modal-window::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-
-    /* Formulaire */
-    .form-group { margin-bottom: 12px; }
+    .terminal-message { margin-top: 25px; color: white; font-size: 1.2rem; font-weight: 700; }
+    .typing-cursor { color: #a855f7; animation: blink 1s step-end infinite; }
     
+    .clean-btn {
+        background: transparent; color: #a855f7; text-decoration: none;
+        padding: 12px 25px; border: 1px solid #a855f7; border-radius: 4px;
+        font-weight: 700; display: inline-block; transition: all 0.3s ease;
+        font-size: 0.95rem; letter-spacing: 1px; cursor: pointer;
+    }
+    .clean-btn:hover { background: rgba(168, 85, 247, 0.1); color: white; border-color: #d8b4fe; }
+    
+    /* Modal Styles */
+    .modal-overlay {
+        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px);
+        z-index: 9999; align-items: center; justify-content: center; 
+        opacity: 0; transition: opacity 0.3s ease; padding: 20px;
+    }
+    .modal-overlay.active { display: flex; opacity: 1; }
+    .modal-window { 
+        width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; 
+        transform: scale(0.95); transition: transform 0.3s ease; margin: 0 auto; 
+        box-shadow: 0 25px 50px rgba(0,0,0,0.9); 
+    }
+    .modal-overlay.active .modal-window { transform: scale(1); }
+    
+    .form-group { margin-bottom: 12px; }
     .terminal-input {
-        width: 100%;
-        background: rgba(255,255,255,0.05);
-        border: 1px solid rgba(255,255,255,0.1);
-        color: #fff;
-        padding: 10px;
-        font-family: 'Courier New', monospace;
-        margin-top: 5px;
-        border-radius: 4px;
-        outline: none;
-        font-size: 0.95rem;
+        width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+        color: #fff; padding: 10px; font-family: 'Courier New', monospace; margin-top: 5px;
+        border-radius: 4px; outline: none; font-size: 0.95rem;
     }
-
-    .terminal-input:focus {
-        border-color: #a855f7;
-        background: rgba(168, 85, 247, 0.05);
-    }
-
+    .terminal-input:focus { border-color: #a855f7; background: rgba(168, 85, 247, 0.05); }
+    
     @keyframes blink { 50% { opacity: 0; } }
-
-    /* Responsive Mobile */
+    
     @media (max-width: 600px) {
         .terminal-body { padding: 20px; }
         .terminal-title { display: none; }
@@ -373,34 +370,57 @@
 </style>
 
 <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        
+        // 1. Animation de la section Hero (au chargement)
+        const heroElements = document.querySelectorAll('.hero-content .reveal');
+        heroElements.forEach(el => el.classList.add('active'));
+
+        // 2. Configuration de l'Observer avec RESET
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1 // 10% visible suffit pour activer
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                // Si l'élément entre dans l'écran
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                } 
+                // Si l'élément sort de l'écran (C'est ICI que la magie opère)
+                else {
+                    entry.target.classList.remove('active');
+                    // En retirant la classe, l'élément redevient invisible et décalé
+                    // Il pourra donc se ré-animer quand on reviendra dessus.
+                }
+            });
+        }, observerOptions);
+
+        // 3. Cibler tous les éléments à animer
+        const scrollElements = document.querySelectorAll('.reveal-on-scroll');
+        scrollElements.forEach(el => observer.observe(el));
+    });
+
+    // --- Fonctions du Modal ---
     function openModal(e) {
         if(e) e.preventDefault();
         const modal = document.getElementById('joinModal');
         modal.classList.add('active');
-        document.body.style.overflow = 'hidden'; // Empêche le scroll de la page arrière
+        document.body.style.overflow = 'hidden'; // Bloque le scroll derrière
     }
-
+    
     function closeModal() {
         const modal = document.getElementById('joinModal');
         modal.classList.remove('active');
         document.body.style.overflow = ''; // Réactive le scroll
     }
-
-    // Fermer si on clique en dehors de la fenêtre (sur le fond sombre)
+    
+    // Fermer si on clique en dehors de la fenêtre
     document.getElementById('joinModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeModal();
-        }
+        if (e.target === this) closeModal();
     });
 </script>
-
-
-
-
-
-
-
-
-
 
 {% endblock %}

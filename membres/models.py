@@ -2,7 +2,7 @@ from django.db import models
 import uuid
 
 # ============================================
-# 1️⃣ MODÈLE MEMBRE
+# 1. MEMBRES
 # ============================================
 class Membres(models.Model):
     nom = models.CharField(max_length=100)
@@ -17,8 +17,6 @@ class Membres(models.Model):
     rang = models.CharField(max_length=50, blank=True, null=True)
     photo = models.ImageField(upload_to='photos/', blank=True, null=True)
     date_inscription = models.DateTimeField(auto_now_add=True)
-    
-    # 🔑 UUID UNIQUE pour QR Code
     uuid_code = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     
     def __str__(self):
@@ -26,10 +24,12 @@ class Membres(models.Model):
     
     class Meta:
         ordering = ['nom']
+        verbose_name = "Membre"
+        verbose_name_plural = "Membres"
 
 
 # ============================================
-# 2️⃣ MODÈLE ÉVÉNEMENT (MULTI-JOURS)
+# 2. ÉVÉNEMENT (Logistique)
 # ============================================
 class Evenement(models.Model):
     titre = models.CharField(max_length=200)
@@ -40,113 +40,109 @@ class Evenement(models.Model):
     points_par_jour = models.IntegerField(default=10)
     created_at = models.DateTimeField(auto_now_add=True)
     actif = models.BooleanField(default=True)
-    image_certificat = models.ImageField(
-        upload_to='certificats_templates/',
-        blank=True, null=True, 
-        verbose_name="Image de fond (Template)"
-    )
     
-    # Coordonnées pour le NOM DU MEMBRE
-    cert_nom_x = models.IntegerField(
-        default=420, 
-        verbose_name="Position X du Nom (Gauche <-> Droite)",
-        help_text="Centre de la page A4 = 420 environ"
-    )
-    cert_nom_y = models.IntegerField(
-        default=300, 
-        verbose_name="Position Y du Nom (Bas <-> Haut)",
-        help_text="0 = Tout en bas. 595 = Tout en haut."
-    )
-    
-    # Couleur du texte
-    cert_text_color = models.CharField(
-        max_length=7, 
-        default="#000000", 
-        verbose_name="Couleur du texte (Hex)",
-        help_text="Ex: #000000 pour noir, #FFFFFF pour blanc, #FFD700 pour or"
-    )
-
-    # ✅ LISTE DES PARTICIPANTS (Relation Many-to-Many avec Membres)
     participants = models.ManyToManyField('Membres', related_name='evenements', blank=True)
     
     def __str__(self):
-        return f"{self.titre} ({self.nombre_jours} jours)"
+        return self.titre
     
     def get_jours_evenement(self):
-        """Retourne la liste de tous les jours"""
         from datetime import timedelta
-        jours = []
-        for i in range(self.nombre_jours):
-            jour = self.date_debut + timedelta(days=i)
-            jours.append(jour)
-        return jours
-    
-    def get_date_fin(self):
-        """Retourne la date de fin"""
-        from datetime import timedelta
-        return self.date_debut + timedelta(days=self.nombre_jours - 1)
+        return [self.date_debut + timedelta(days=i) for i in range(self.nombre_jours)]
     
     class Meta:
         ordering = ['-date_debut']
+        verbose_name = "Événement"
+        verbose_name_plural = "Événements"
 
 
 # ============================================
-# 3️⃣ MODÈLE PRÉSENCE (PAR JOUR)
+# 3. TEMPLATE CERTIFICAT (Design)
+# ============================================
+class CertificateTemplate(models.Model):
+    evenement = models.OneToOneField(
+        Evenement, 
+        on_delete=models.CASCADE, 
+        related_name='template_certificat',
+        verbose_name="Événement associé"
+    )
+    
+    image_fond = models.ImageField(
+        upload_to='certificats_templates/',
+        verbose_name="Image de fond (A4 Paysage)"
+    )
+    
+    # Coordonnées du NOM
+    nom_x = models.IntegerField(default=420, verbose_name="Position X du Nom", help_text="Centre ~420")
+    nom_y = models.IntegerField(default=300, verbose_name="Position Y du Nom", help_text="Bas=0, Haut=595")
+    text_color = models.CharField(max_length=7, default="#000000", verbose_name="Couleur Texte (Hex)")
+    
+    # Police
+    police_ttf = models.FileField(
+        upload_to='fonts/', 
+        blank=True, null=True, 
+        verbose_name="Police personnalisée (.ttf)",
+        help_text="Laissez vide pour Helvetica standard."
+    )
+    taille_police = models.IntegerField(default=45, verbose_name="Taille de la police")
+
+    # Signature (Optionnel)
+    signature = models.ImageField(
+        upload_to='signatures/', 
+        blank=True, null=True, 
+        verbose_name="Signature (PNG Transparent)"
+    )
+    sign_x = models.IntegerField(default=600, verbose_name="Pos X Signature")
+    sign_y = models.IntegerField(default=150, verbose_name="Pos Y Signature")
+
+    def __str__(self):
+        return f"Design Certificat - {self.evenement.titre}"
+
+    class Meta:
+        verbose_name = "Configuration du Certificat"
+        verbose_name_plural = "Configurations des Certificats"
+
+
+# ============================================
+# 4. PRÉSENCE
 # ============================================
 class Presence(models.Model):
-    STATUTS = [
-        ('present', 'Présent'),
-        ('absent', 'Absent'),
-    ]
-    
+    STATUTS = [('present', 'Présent'), ('absent', 'Absent')]
     membre = models.ForeignKey(Membres, on_delete=models.CASCADE, related_name='presences')
     evenement = models.ForeignKey(Evenement, on_delete=models.CASCADE, related_name='presences')
-    jour = models.DateField()  # Jour spécifique
-    date_scan = models.DateTimeField(auto_now_add=True)  # Timestamp du scan
+    jour = models.DateField()
+    date_scan = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=STATUTS, default='present')
-    
-    def __str__(self):
-        return f"{self.membre.prenom} - {self.evenement.titre} ({self.jour})"
     
     class Meta:
         unique_together = ('membre', 'evenement', 'jour')
         ordering = ['-date_scan']
+        verbose_name = "Présence"
+        verbose_name_plural = "Présences"
 
 
 # ============================================
-# 4️⃣ MODÈLE CERTIFICAT
+# 5. CERTIFICAT DÉLIVRÉ (Preuve)
 # ============================================
 class Certificate(models.Model):
     membre = models.ForeignKey(Membres, on_delete=models.CASCADE, related_name='certificates')
-    evenement = models.ForeignKey(Evenement, on_delete=models.CASCADE, related_name='certificates')
+    evenement = models.ForeignKey(Evenement, on_delete=models.CASCADE, related_name='certificates_delivres')
     titre = models.CharField(max_length=200)
-    jours_assistes = models.IntegerField()
     date_obtention = models.DateTimeField(auto_now_add=True)
-    
-    # ✅ NOUVEAUX CHAMPS : Pour régler la position SUR CE CERTIFICAT PRÉCIS
-    cert_nom_x = models.IntegerField(default=420, verbose_name="Position X (Gauche/Droite)")
-    cert_nom_y = models.IntegerField(default=300, verbose_name="Position Y (Bas/Haut)")
-    cert_text_color = models.CharField(max_length=7, default="#000000", verbose_name="Couleur Texte (Hex)")
-    police_ttf = models.FileField(
-        upload_to='fonts/', 
-        blank=True, 
-        null=True, 
-        verbose_name="Fichier Police (.ttf)",
-        help_text="Laissez vide pour utiliser Helvetica par défaut."
-    )
-    
-    # ❌ ON A SUPPRIMÉ LE CHAMP 'fichier' CAR ON GÉNÈRE LE PDF AUTOMATIQUEMENT
+    code_verification = models.UUIDField(default=uuid.uuid4, editable=False)
 
     def __str__(self):
-        return f"{self.titre} - {self.membre.prenom}"
+        return f"Certificat: {self.membre.nom} ({self.evenement.titre})"
     
     class Meta:
         unique_together = ('membre', 'evenement')
         ordering = ['-date_obtention']
+        verbose_name = "Certificat Délivré"
+        verbose_name_plural = "Certificats Délivrés"
 
 
 # ============================================
-# 5️⃣ MODÈLE ÉQUIPE
+# 6. AUTRES (Team, Annonce)
 # ============================================
 class TeamMember(models.Model):
     nom = models.CharField(max_length=100)
@@ -161,26 +157,10 @@ class TeamMember(models.Model):
     ordre = models.IntegerField(default=0)
     actif = models.BooleanField(default=True)
     date_creation = models.DateTimeField(auto_now_add=True)
-    
-    def __str__(self):
-        return f"{self.prenom} {self.nom}"
-    
-    class Meta:
-        ordering = ['ordre']
 
-
-# ============================================
-# 6️⃣ MODÈLE ANNONCE
-# ============================================
 class Annonce(models.Model):
     titre = models.CharField(max_length=200)
     contenu = models.TextField()
     auteur = models.ForeignKey(Membres, on_delete=models.CASCADE)
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
-    
-    class Meta:
-        ordering = ['-date_creation']
-
-
-        
